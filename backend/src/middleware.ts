@@ -21,6 +21,8 @@ export async function before () {
         req.isAuthenticated = Boolean(row?.userId);
     }
 
+    res.headers['Access-Control-Allow-Credentials'] = 'true';
+    res.headers['Access-Control-Allow-Origin'] = req.headers['origin'] || '';
 };
 
 function getCookies (cookieStr : string) {

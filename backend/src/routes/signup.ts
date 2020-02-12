@@ -3,12 +3,12 @@ import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 
 import { transaction } from '../db';
+import { isEmail } from '../util';
 
-function assertCreatePayload (payload): asserts payload is { username: string; password: string } {
-    if (typeof req.json['username'] !== 'string') throw new Error('Bad Request');
+function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
+    if (!isEmail(req.json['email']))              throw new Error('Bad Request');
     if (typeof req.json['password'] !== 'string') throw new Error('Bad Request');
     if (req.json['password'].length < 10)         throw new Error('Bad Request');
-    if (req.json['username'].length < 1)          throw new Error('Bad Request');
 }
 
 export async function create () {
@@ -18,8 +18,8 @@ export async function create () {
 
     const passwordHash = await bcrypt.hash(req.json.password, 14);
     const { rows: [ user ] } = await trx.query`
-        insert into users (username, "passwordHash")
-        values (${req.json.username}, ${passwordHash})
+        insert into users (email, "passwordHash")
+        values (${req.json.email}, ${passwordHash})
         returning *
     `;
 

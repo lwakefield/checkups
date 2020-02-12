@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 export async function seed(knex: Knex): Promise<any> {
     const [ { id: userId } ] = await knex('users')
         .insert({
-            username: 'alice',
+            email: 'alice@example.com',
             passwordHash: await bcrypt.hash('password123', 14)
         }).returning('*');
 

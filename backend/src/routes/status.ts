@@ -17,7 +17,5 @@ export async function index () {
 
     if (rows[0]?.userId !== req.userId) throw new Error('Unauthorized');
 
-    console.log(rows);
-
     res.send({ json: rows.map(({ userId, ...row }) => row) });
 }

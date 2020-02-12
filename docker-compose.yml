@@ -14,7 +14,7 @@ services:
       - 1111:80
     working_dir: /app
     volumes:
-      - ./:/app
+      - ./backend:/app
 
   worker:
     image: node:12
@@ -25,7 +25,7 @@ services:
       - db
     working_dir: /app
     volumes:
-      - ./:/app
+      - ./backend:/app
 
   db:
     image: postgres

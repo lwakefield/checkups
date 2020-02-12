@@ -3,9 +3,10 @@ import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 
 import { query } from '../db';
+import { isEmail } from '../util';
 
-function assertCreatePayload (payload): asserts payload is { username: string; password: string } {
-    if (typeof req.json['username'] !== 'string') throw new Error('Bad Request');
+function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
+    if (!isEmail(req.json['email']))              throw new Error('Bad Request');
     if (typeof req.json['password'] !== 'string') throw new Error('Bad Request');
 }
 
@@ -14,7 +15,7 @@ export async function create () {
 
     const { rows: [ user ] } = await query`
         select * from users
-        where username=${req.json.username}
+        where email=${req.json.email}
     `;
 
     if (!user) throw new Error('Unauthorized');
@@ -34,6 +35,7 @@ export async function create () {
         status: 201,
         headers: { 'Set-Cookie': `sessionToken=${token}; Expires=${expiresAt}` },
     });
+    console.log(res.headers);
 }
 
 export async function destroy () {
@@ -44,6 +46,6 @@ export async function destroy () {
     `;
     res.send({
         status: 204,
-        headers: { 'Set-cookie': 'sessionToken=' },
+        headers: { 'Set-Cookie': 'sessionToken=' },
     });
 }
