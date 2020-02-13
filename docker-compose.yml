@@ -4,7 +4,7 @@ services:
 services:
   app:
     image: node:12
-    command: node_modules/.bin/persea --require=ts-node/register --dir=src dev
+    command: node_modules/.bin/persea --dir=dist dev
     environment:
       - PORT=80
       - DB_URI=postgres://postgres@db/postgres
@@ -12,6 +12,13 @@ services:
       - db
     ports:
       - 1111:80
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+
+  compiler:
+    image: node:12
+    command: node_modules/.bin/tsc --watch
     working_dir: /app
     volumes:
       - ./backend:/app
@@ -26,6 +33,13 @@ services:
     working_dir: /app
     volumes:
       - ./backend:/app
+
+  test-service:
+    image: node:12
+    command: node_modules/.bin/persea --port=80 run
+    working_dir: /app
+    volumes:
+      - ./examples/test-service:/app
 
   db:
     image: postgres

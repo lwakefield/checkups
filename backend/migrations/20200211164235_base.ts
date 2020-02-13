@@ -24,10 +24,12 @@ export async function up(knex: Knex): Promise<any> {
     });
 
     await knex.schema.createTable('scheduledCheckupStatuses', (table) => {
+        table.increments();
         table.integer('scheduledCheckupId').unsigned();
         table.foreign('scheduledCheckupId').references('scheduledCheckups.id');
         table.dateTime('dueAt');
-        table.string('status');
+        table.dateTime('ranAt');
+        table.integer('status');
     });
 }
 

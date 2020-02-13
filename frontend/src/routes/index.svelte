@@ -32,7 +32,24 @@
 		max-width: 300px;
 		width: 100%;
 	}
+
+	.ok {
+		color: green;
+	}
+	.notOk {
+		color: red;
+	}
 </style>
+
+<script context="module">
+	export async function preload ({ params, query }) {
+		const res = await this.fetch(`${process.env.API_URL}/checkups`, {
+			credentials: 'include',
+		});
+		const checkups = res.ok ? await res.json() : [];
+		return { checkups };
+	}
+</script>
 
 <script>
 	let email = '';
@@ -44,34 +61,13 @@
 		crontab: '0 * * * *'
 	};
 
-	async function handleSignup (e) {
-		e.preventDefault();
-
-		await fetch(`${process.env.API_URL}/signup`, {
-			method: 'POST',
-			mode: 'cors',
-			credentials: 'include',
-			body: JSON.stringify({ email, password }),
-		});
-	}
-
-	async function handleSignin (e) {
-		e.preventDefault();
-
-		await fetch(`${process.env.API_URL}/sessions`, {
-			method: 'POST',
-			mode: 'cors',
-			credentials: 'include',
-			body: JSON.stringify({ email, password }),
-		});
-	}
+	export let checkups;
 
 	async function handleCreateCheckup (e) {
 		e.preventDefault();
 
 		await fetch(`${process.env.API_URL}/checkups`, {
 			method: 'POST',
-			mode: 'cors',
 			credentials: 'include',
 			body: JSON.stringify(newCheckup),
 		});
@@ -79,40 +75,8 @@
 </script>
 
 <svelte:head>
-	<title>checkups</title>
+	<title>Checkups</title>
 </svelte:head>
-
-<h1>Checkups</h1>
-
-<form on:submit={handleSignup}>
-	<h2>Signup</h2>
-	<label>
-		Email: <input type="email" bind:value={email} >
-	</label>
-
-	<label>
-		Password: <input type="password" bind:value={password} >
-	</label>
-
-	<label>
-		Verify Password: <input type="password" bind:value={verifyPassword} >
-	</label>
-
-	<button>Signup</button>
-</form>
-
-<form on:submit={handleSignin}>
-	<h2>Signin</h2>
-	<label>
-		Email: <input type="email" bind:value={email} >
-	</label>
-
-	<label>
-		Password: <input type="password" bind:value={password} >
-	</label>
-
-	<button>Signin</button>
-</form>
 
 <form on:submit={handleCreateCheckup}>
 	<h2>New Checkup</h2>
@@ -123,7 +87,8 @@
 
 	<label>Interval:
 		<select bind:value={newCheckup.crontab}>
-			<option value="0 * * * *">Hourly</option>
+			<option value="* * * * *">Every Minute</option>
+			<option value="0 * * * *" selected>Hourly</option>
 			<option value="0 0 * * *">Daily</option>
 			<option value="0 0 * * 0">Weekly</option>
 		</select>
@@ -131,3 +96,23 @@
 
 	<button>Create</button>
 </form>
+
+<section>
+	<h2>Outbound Checkups</h2>
+
+	{#each checkups as checkup, i}
+		<div>
+			{checkup.url} - {checkup.crontab}
+			<div>
+				{#each Array.from(checkup.recentStatuses).reverse() as status, i}
+					<span
+						class:ok="{status.status === "200"}"
+						class:notOk="{status.status !== "200"}"
+					>{status.status}&nbsp;</span>
+				{/each}
+			</div>
+			<a href="/checkups/{checkup.id}">View</a>
+		</div>
+	{/each}
+
+</section>

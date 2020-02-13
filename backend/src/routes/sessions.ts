@@ -35,7 +35,6 @@ export async function create () {
         status: 201,
         headers: { 'Set-Cookie': `sessionToken=${token}; Expires=${expiresAt}` },
     });
-    console.log(res.headers);
 }
 
 export async function destroy () {

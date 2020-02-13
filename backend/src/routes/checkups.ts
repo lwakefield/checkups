@@ -2,16 +2,35 @@ import { parseExpression } from 'cron-parser';
 
 import { query } from '../db';
 import { assertAuthenticated } from '../session';
+import {groupBy} from '../util';
 
 export async function index () {
     assertAuthenticated();
 
-    const { rows } = await query`
+    const { rows: checkups } = await query`
         select * from "scheduledCheckups"
         where "userId"=${req.userId}
     `;
 
-    res.send({ json: rows });
+    const { rows: statuses } = await query`
+        with "checkupsByAge" as (
+            select
+                *,
+                rank() over (partition by "scheduledCheckupId" order by id desc)
+            from "scheduledCheckupStatuses"
+            where
+                "scheduledCheckupId" = any(${checkups.map(v => v.id)})
+        )
+        select * from "checkupsByAge" where rank <= 5
+    `;
+
+    const statusesGroupedByCheckup = groupBy(statuses, v => v.scheduledCheckupId);
+
+    for (const checkup of checkups) {
+        Object.assign(checkup, { recentStatuses: statusesGroupedByCheckup[checkup.id] || [] });
+    }
+
+    res.send({ json: checkups });
 }
 
 function assertCreatePayload (payload): asserts payload is { url: string; crontab: string } {
@@ -38,13 +57,22 @@ export async function create () {
 export async function show (id : string) {
     assertAuthenticated();
 
-    const { rows: [ row ] } = await query`
+    const { rows: [ checkup ] } = await query`
         select * from "scheduledCheckups"
         where id=${id}
     `;
 
-    if (!row)                                          throw new Error('Not Found');
-    if (row.userId !== req.userId) throw new Error('Unauthorized');
+    if (!checkup)                      throw new Error('Not Found');
+    if (checkup.userId !== req.userId) throw new Error('Unauthorized');
 
-    res.send({ json: row });
+    const { rows: recentStatuses } = await query`
+        select * from "scheduledCheckupStatuses"
+        where "scheduledCheckupId"=${id}
+        order by id desc
+        limit 5
+    `;
+
+    Object.assign(checkup, { recentStatuses });
+
+    res.send({ json: checkup });
 };

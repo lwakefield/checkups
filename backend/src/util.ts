@@ -5,3 +5,17 @@ export function isEmail (val): boolean {
 
     return EMAIL_RGX.test(val);
 }
+
+export function groupBy (vals, predicate) {
+    const res = {};
+
+    for (const val of vals) {
+        const id = predicate(val);
+
+        if (res[id] === undefined) res[id] = [];
+
+        res[id].push(val);
+    }
+
+    return res;
+}
