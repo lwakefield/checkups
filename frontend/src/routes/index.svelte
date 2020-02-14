@@ -106,8 +106,8 @@
 			<div>
 				{#each Array.from(checkup.recentStatuses).reverse() as status, i}
 					<span
-						class:ok="{status.status === "200"}"
-						class:notOk="{status.status !== "200"}"
+						class:ok="{status.status === 200}"
+						class:notOk="{status.status !== 200}"
 					>{status.status}&nbsp;</span>
 				{/each}
 			</div>

@@ -8,10 +8,30 @@ export async function seed(knex: Knex): Promise<any> {
             passwordHash: await bcrypt.hash('password123', 14)
         }).returning('*');
 
-    await knex('scheduledCheckups').insert({
-        userId,
-        url: 'https://example.com',
-        crontab: '*/2 * * * *',
-        nextRunDueAt: (new Date()).toISOString(),
-    })
+    await knex('scheduledCheckups').insert([
+        {
+            userId,
+            url: 'http://test-service/health?flakiness=0.99',
+            crontab: '* * * * *',
+            nextRunDueAt: (new Date()).toISOString(),
+        },
+        {
+            userId,
+            url: 'http://test-service/health?flakiness=0.8',
+            crontab: '* * * * *',
+            nextRunDueAt: (new Date()).toISOString(),
+        },
+        {
+            userId,
+            url: 'http://test-service/health?flakiness=0.2',
+            crontab: '* * * * *',
+            nextRunDueAt: (new Date()).toISOString(),
+        },
+        {
+            userId,
+            url: 'http://test-service/health?flakiness=0.01',
+            crontab: '* * * * *',
+            nextRunDueAt: (new Date()).toISOString(),
+        },
+    ])
 };

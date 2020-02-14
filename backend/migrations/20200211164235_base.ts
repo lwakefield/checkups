@@ -23,6 +23,13 @@ export async function up(knex: Knex): Promise<any> {
         table.dateTime('nextRunDueAt');
     });
 
+    await knex.schema.createTable('tasks', (table) => {
+        table.increments();
+        table.string('name');
+        table.json('payload');
+        table.string('status');
+    });
+
     await knex.schema.createTable('scheduledCheckupStatuses', (table) => {
         table.increments();
         table.integer('scheduledCheckupId').unsigned();
@@ -39,4 +46,5 @@ export async function down(knex: Knex): Promise<any> {
     await knex.schema.dropTable('scheduledCheckups');
     await knex.schema.dropTable('sessions');
     await knex.schema.dropTable('users');
+    await knex.schema.dropTable('tasks');
 }

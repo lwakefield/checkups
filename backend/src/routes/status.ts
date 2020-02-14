@@ -8,47 +8,59 @@ export async function index () {
         beforeId = MAX_INT_64,
         offset = 0,
         limit = 20,
-        order="desc"
     } = req.query as any;
 
     if (!checkupId) { throw new Error('Bad Request'); }
 
+    const { rows: checkIsOwnerRows } = await query`
+        select * from "scheduledCheckups"
+        where id=${checkupId} and "userId"=${req.userId}
+    `;
+    if (checkIsOwnerRows.length === 0) throw new Error('Unauthorized');
+
     const baseQuery = query`
-        select "scheduledCheckupStatuses".*, "scheduledCheckups"."userId"
-        from "scheduledCheckupStatuses", "scheduledCheckups"
-        where
-            "scheduledCheckups"."id"=${checkupId}
-            and "scheduledCheckupId"=${checkupId}
+        select * from "scheduledCheckupStatuses"
+        where "scheduledCheckupId"=${checkupId}
     `;
 
-    const { rows: statuses } = await query`
+    const getStatuses$ = query`
         select * from (${baseQuery}) q
         where q.id < ${beforeId}
-        order by "dueAt" ${db.raw(order)}
+        order by "dueAt" desc
         limit ${db.raw(limit)} offset ${offset}
     `;
-
-
-    if (statuses[0]?.userId !== req.userId) throw new Error('Unauthorized');
-
-    const { rows: [ { count } ]} = await query`
+    const getTotalCount$ = query`
         select count(*) from (${baseQuery}) q
     `;
-
-    const { rows: [first, last] } = await query`
+    const getFirstAndLast$ = query`
         (select id from (${baseQuery}) q order by "dueAt" desc limit 1)
         union
         (select id from (${baseQuery}) q order by "dueAt" asc limit 1)
     `;
 
-    console.log(count);
+    const [
+        { rows: statuses },
+        { rows: [ { count } ]},
+        { rows: [ first, last ]},
+    ] = await Promise.all([
+        getStatuses$,
+        getTotalCount$,
+        getFirstAndLast$,
+    ]);
+
+    res.headers['x-total-count'] = count;
+
+    if (statuses.length > 0) {
+        if (statuses[statuses.length - 1].id > first.id) {
+            res.headers['x-next-page'] = `?beforeId=${statuses[statuses.length - 1].id}`;
+        }
+
+        if (statuses[0].id > last.id) {
+            res.headers['x-prev-page'] = `?beforeId=${statuses[statuses.length - 1].id}`;
+        }
+    }
 
     res.send({
         json: statuses.map(({ userId, ...row }) => row),
-            headers: {
-            'x-first-id': first.id,
-            'x-last-id': last.id,
-            'x-total-count': count,
-        }
     });
 }

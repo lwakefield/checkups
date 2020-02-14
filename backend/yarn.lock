@@ -3,9 +3,9 @@
 
 
 "@persea/persea@^0.1.9":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@persea/persea/-/persea-0.1.14.tgz#f4599f0d8a6a951457bb8c944850d468eb837a27"
-  integrity sha512-AgrSObKaESZhFsSw7vQndF7rMRG5/eLzR4MsOFIiwN3XZWCSN9VAc4kfDqFsnpZAyf30OqrxW4GBPkj2Gw3hAw==
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@persea/persea/-/persea-0.1.15.tgz#9d9b0888e04164303bb390779ad57f0e46811f6b"
+  integrity sha512-880JUN7lr1NQp4H9Em+1AqmobhnzBmDzSrG5ppSSoJoERKG83L/KLbra5c1cw3hp4mA3ARSU1gVfopF2X01Q5w==
 
 "@types/node@^13.7.0":
   version "13.7.1"
@@ -963,6 +963,11 @@ node-pre-gyp@0.14.0:
     rimraf "^2.6.1"
     semver "^5.3.0"
     tar "^4.4.2"
+
+nodemailer@^6.4.2:
+  version "6.4.2"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.4.2.tgz#7147550e32cdc37453380ab78d2074533966090a"
+  integrity sha512-g0n4nH1ONGvqYo1v72uSWvF/MRNnnq1LzmSzXb/6EPF3LFb51akOhgG3K2+aETAsJx90/Q5eFNTntu4vBCwyQQ==
 
 nopt@^4.0.1:
   version "4.0.1"

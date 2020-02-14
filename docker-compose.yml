@@ -23,11 +23,24 @@ services:
     volumes:
       - ./backend:/app
 
-  worker:
+  checkups-worker:
     image: node:12
-    command: node_modules/.bin/ts-node src/worker.ts
+    command: node_modules/.bin/ts-node src/workers/checkups.ts
     environment:
       - DB_URI=postgres://postgres@db/postgres
+      - SMTP_URI=smtp://test:password@mailhog:1025/?pool=true
+    depends_on:
+      - db
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+
+  tasks-worker:
+    image: node:12
+    command: node_modules/.bin/ts-node src/workers/tasks.ts
+    environment:
+      - DB_URI=postgres://postgres@db/postgres
+      - SMTP_URI=smtp://test:password@mailhog:1025/?pool=true
     depends_on:
       - db
     working_dir: /app
@@ -40,6 +53,11 @@ services:
     working_dir: /app
     volumes:
       - ./examples/test-service:/app
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1113:8025
 
   db:
     image: postgres

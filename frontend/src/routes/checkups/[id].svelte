@@ -22,7 +22,7 @@
 		return {
 			checkup: await checkup.json(),
 			statuses: await statuses.json(),
-			firstStatusId: statuses.headers.get('x-first-id'),
+			nextPage: statuses.headers.get('x-next-page'),
 			lastStatusId: statuses.headers.get('x-last-id'),
 		};
 	}
@@ -32,7 +32,7 @@
 
 	export let checkup;
 	export let statuses;
-	export let firstStatusId;
+	export let nextPage;
 	export let lastStatusId;
 
 	$: sortedStatuses = statuses.sort((a, b) => b.dueAt - a.dueAt);
@@ -72,7 +72,7 @@
 			<rect
 				width="3"
 				height="100%"
-				fill="{ status.status === "200" ? "#81a1c1" : "#b5616a" }"
+				fill="{ status.status === 200 ? "#81a1c1" : "#b5616a" }"
 				x="{xScale(new Date(status.dueAt).valueOf())}"
 			/>
 		{/each}
@@ -85,13 +85,13 @@
 {#each Array.from(statuses) as status, i}
 	<div>
 		<span
-			class:ok="{status.status === "200"}"
-			class:notOk="{status.status !== "200"}"
+			class:ok="{status.status === 200}"
+			class:notOk="{status.status !== 200}"
 		>{status.status}</span>
 		<span>{status.dueAt}</span>
 	</div>
 {/each}
 
-{#if statuses.length > 0 && statuses[statuses.length - 1].id > firstStatusId}
-	<a href="/checkups/{checkup.id}?beforeId={statuses[statuses.length - 1].id}">Older</a>
+{#if nextPage}
+	<a href="/checkups/{checkup.id}{nextPage}">Older</a>
 {/if}
