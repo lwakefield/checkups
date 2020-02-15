@@ -8,10 +8,10 @@
 	label {
 		display: flex;
 		justify-content: space-between;
-		margin: 0.25rem;
+		margin: 0.25rem 0;
 	}
 
-	input {
+	input, select {
 		max-width: 300px;
 		width: 100%;
 	}
