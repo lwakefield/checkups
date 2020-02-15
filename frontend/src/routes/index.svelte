@@ -30,6 +30,7 @@
 </style>
 
 <script context="module">
+	// TODO: move this page to /checkups and add redirects
 	export async function preload ({ params, query }) {
 		const res = await this.fetch(`${process.env.API_URL}/checkups`, {
 			credentials: 'include',
