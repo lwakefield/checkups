@@ -21,6 +21,7 @@ export async function before () {
         req.isAuthenticated = Boolean(user?.userId);
     }
 
+    res.headers['Access-Control-Expose-Headers'] = 'x-total-count, x-next-page, x-prev-page';
     res.headers['Access-Control-Allow-Credentials'] = 'true';
     res.headers['Access-Control-Allow-Origin'] = req.headers['origin'] || '';
 };

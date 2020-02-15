@@ -2,7 +2,7 @@ import { parseExpression } from 'cron-parser';
 
 import { query } from '../db';
 import { assertAuthenticated } from '../session';
-import {groupBy} from '../util';
+import { groupBy } from '../util';
 
 export async function index () {
     assertAuthenticated();

@@ -23,6 +23,7 @@
 			checkup: await checkup.json(),
 			statuses: await statuses.json(),
 			nextPage: statuses.headers.get('x-next-page'),
+			prevPage: statuses.headers.get('x-prev-page'),
 			lastStatusId: statuses.headers.get('x-last-id'),
 		};
 	}
@@ -33,6 +34,7 @@
 	export let checkup;
 	export let statuses;
 	export let nextPage;
+	export let prevPage;
 	export let lastStatusId;
 
 	$: sortedStatuses = statuses.sort((a, b) => b.dueAt - a.dueAt);
@@ -92,6 +94,9 @@
 	</div>
 {/each}
 
+{#if prevPage}
+	<a href="/checkups/{checkup.id}{prevPage}">Newer</a>
+{/if}
 {#if nextPage}
 	<a href="/checkups/{checkup.id}{nextPage}">Older</a>
 {/if}

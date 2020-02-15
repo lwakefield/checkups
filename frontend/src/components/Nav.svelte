@@ -1,4 +1,9 @@
 <script>
+	import { stores } from '@sapper/app';
+	const { session } = stores();
+
+	const user = $session.user;
+
 	export let segment;
 </script>
 
@@ -7,6 +12,8 @@
 		border-bottom: 1px solid rgba(255,62,0,0.1);
 		font-weight: 300;
 		padding: 0 1em;
+		display: flex;
+		justify-content: space-between;
 	}
 
 	ul {
@@ -41,7 +48,7 @@
 		bottom: -1px;
 	}
 
-	a {
+	a, span {
 		text-decoration: none;
 		padding: 1em 0.5em;
 		display: block;
@@ -51,7 +58,13 @@
 <nav>
 	<ul>
 		<li><a class:selected='{segment === undefined}' href='/'>home</a></li>
-		<li><a class:selected='{segment === "signup"}' href='/signup'>signup</a></li>
-		<li><a class:selected='{segment === "signin"}' href='/signin'>signin</a></li>
+	</ul>
+	<ul>
+		{#if user }
+			<span>hello {user.email}</span>
+		{:else}
+			<li><a class:selected='{segment === "signup"}' href='/signup'>signup</a></li>
+			<li><a class:selected='{segment === "signin"}' href='/signin'>signin</a></li>
+		{/if}
 	</ul>
 </nav>

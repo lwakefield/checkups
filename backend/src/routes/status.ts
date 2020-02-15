@@ -6,6 +6,7 @@ export async function index () {
     const {
         checkupId,
         beforeId = MAX_INT_64,
+        afterId = 0,
         offset = 0,
         limit = 20,
     } = req.query as any;
@@ -25,7 +26,7 @@ export async function index () {
 
     const getStatuses$ = query`
         select * from (${baseQuery}) q
-        where q.id < ${beforeId}
+        where q.id < ${beforeId} and q.id > ${afterId}
         order by "dueAt" desc
         limit ${db.raw(limit)} offset ${offset}
     `;
@@ -55,8 +56,8 @@ export async function index () {
             res.headers['x-next-page'] = `?beforeId=${statuses[statuses.length - 1].id}`;
         }
 
-        if (statuses[0].id > last.id) {
-            res.headers['x-prev-page'] = `?beforeId=${statuses[statuses.length - 1].id}`;
+        if (statuses[0].id < last.id) {
+            res.headers['x-prev-page'] = `?after=${statuses[0].id}`;
         }
     }
 
