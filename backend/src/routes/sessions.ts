@@ -13,7 +13,7 @@ function assertCreatePayload (payload): asserts payload is { email: string; pass
 export async function create () {
     assertCreatePayload(req.json);
 
-    const { rows: [ user ] } = await query`
+    const [ user ] = await query`
         select * from users
         where email=${req.json.email}
     `;

@@ -6,9 +6,10 @@ services:
     image: node:12
     command: node_modules/.bin/persea --dir=dist --port=80 dev
     environment:
-      - DB_URI=postgres://postgres@db/postgres
+      - DB_URI=postgres://postgres:password@db/postgres
     depends_on:
       - db
+      - compiler
     ports:
       - 1111:80
     working_dir: /app
@@ -40,7 +41,7 @@ services:
     image: node:12
     command: node_modules/.bin/ts-node src/workers/checkups.ts
     environment:
-      - DB_URI=postgres://postgres@db/postgres
+      - DB_URI=postgres://postgres:password@db/postgres
       - SMTP_URI=smtp://test:password@mailhog:1025/?pool=true
     depends_on:
       - db
@@ -52,10 +53,11 @@ services:
     image: node:12
     command: node_modules/.bin/ts-node src/workers/tasks.ts
     environment:
-      - DB_URI=postgres://postgres@db/postgres
+      - DB_URI=postgres://postgres:password@db/postgres
       - SMTP_URI=smtp://test:password@mailhog:1025/?pool=true
     depends_on:
       - db
+      - mailhog
     working_dir: /app
     volumes:
       - ./backend:/app
@@ -74,3 +76,5 @@ services:
 
   db:
     image: postgres
+    environment:
+      - POSTGRES_PASSWORD=password

@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport(process.env.SMTP_URI);
         try {
             const trx = await transaction();
 
-            const { rows: [ task ] } = await trx.query`
+            const [ task ] = await trx.query`
                 select * from tasks
                 where status = 'queued'
                 for update skip locked
@@ -53,7 +53,7 @@ const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 })();
 
 async function maybeSendAlerts ({ scheduledCheckupStatusId }) {
-    const { rows: [ latest, previous ] } = await query`
+    const [ latest, previous ] = await query`
         select * from "scheduledCheckupStatuses"
         where id <= ${scheduledCheckupStatusId}
         order by id desc
@@ -70,13 +70,13 @@ async function maybeSendAlerts ({ scheduledCheckupStatusId }) {
         return;
     }
 
-    const { rows: [ checkup ] } = await query`
+    const [ checkup ] = await query`
         select "scheduledCheckups".* from "scheduledCheckups", "scheduledCheckupStatuses"
         where "scheduledCheckupStatuses"."scheduledCheckupId" = "scheduledCheckups".id
             and "scheduledCheckupStatuses".id = ${scheduledCheckupStatusId}
     `;
 
-    const { rows: [ user ] } = await query`
+    const [ user ] = await query`
         select * from users
         where id=${checkup.userId}
     `;

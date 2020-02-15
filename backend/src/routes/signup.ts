@@ -17,7 +17,7 @@ export async function create () {
     const trx = await transaction();
 
     const passwordHash = await bcrypt.hash(req.json.password, 14);
-    const { rows: [ user ] } = await trx.query`
+    const [ user ]  = await trx.query`
         insert into users (email, "passwordHash")
         values (${req.json.email}, ${passwordHash})
         returning *

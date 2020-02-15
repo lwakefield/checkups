@@ -10,15 +10,15 @@ export async function before () {
     req.cookies = getCookies(req.headers['cookie'] ?? '');
 
     if (req.cookies.sessionToken) {
-        const { rows: [ row ] } = await query`
+        const [ user ] = await query`
             select * from sessions
             where
             token=${req.cookies.sessionToken}
             and now() < "expiresAt"
         `;
 
-        req.userId          = row?.userId ?? null;
-        req.isAuthenticated = Boolean(row?.userId);
+        req.userId          = user?.userId ?? null;
+        req.isAuthenticated = Boolean(user?.userId);
     }
 
     res.headers['Access-Control-Allow-Credentials'] = 'true';

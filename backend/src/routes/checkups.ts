@@ -7,12 +7,12 @@ import {groupBy} from '../util';
 export async function index () {
     assertAuthenticated();
 
-    const { rows: checkups } = await query`
+    const checkups = await query`
         select * from "scheduledCheckups"
         where "userId"=${req.userId}
     `;
 
-    const { rows: statuses } = await query`
+    const statuses = await query`
         with "checkupsByAge" as (
             select
                 *,
@@ -45,19 +45,19 @@ export async function create () {
     const { url, crontab } = req.json;
     const nextRunDueAt     = parseExpression(crontab).next().toISOString();
 
-    const { rows: [ row ] } = await query`
+    const [ checkup ] = await query`
         insert into "scheduledCheckups"(url, crontab, "nextRunDueAt", "userId")
         values (${url}, ${crontab}, ${nextRunDueAt}, ${req.userId})
         returning *
     `;
 
-    res.send({ status: 201, json: row });
+    res.send({ status: 201, json: checkup });
 };
 
 export async function show (id : string) {
     assertAuthenticated();
 
-    const { rows: [ checkup ] } = await query`
+    const [ checkup ] = await query`
         select * from "scheduledCheckups"
         where id=${id}
     `;
@@ -65,7 +65,7 @@ export async function show (id : string) {
     if (!checkup)                      throw new Error('Not Found');
     if (checkup.userId !== req.userId) throw new Error('Unauthorized');
 
-    const { rows: recentStatuses } = await query`
+    const recentStatuses = await query`
         select * from "scheduledCheckupStatuses"
         where "scheduledCheckupId"=${id}
         order by id desc

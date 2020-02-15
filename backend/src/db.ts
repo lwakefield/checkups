@@ -1,6 +1,17 @@
 import * as knex from 'knex';
 
-export const db = knex({ client:'pg', connection: process.env.DB_URI });
+export const db = knex({
+    client: 'pg',
+    connection: process.env.DB_URI,
+    postProcessResponse: (result, context) => {
+        const isRaw = result.command;
+        if (isRaw) {
+            return result.rows;
+        }
+
+        return result;
+    }
+});
 
 export async function init () {
     await db.migrate.latest();

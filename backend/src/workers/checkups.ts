@@ -1,8 +1,7 @@
 import * as fetch from 'node-fetch';
 import { parseExpression } from 'cron-parser';
-import * as nodemailer from 'nodemailer';
 
-import { init, transaction, query } from '../db';
+import { init, transaction, } from '../db';
 
 function sleep (ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -15,7 +14,7 @@ async function main () {
         try {
             const trx = await transaction();
 
-            const { rows: [ checkup ] } = await trx.query`
+            const [ checkup ] = await trx.query`
                 select * from "scheduledCheckups"
                 where "nextRunDueAt" <= now()
                 for update skip locked
@@ -31,7 +30,7 @@ async function main () {
 
             const res = await fetch(checkup.url);
 
-            const { rows: [ insertedStatus ] } = await trx.query`
+            const [ insertedStatus ] = await trx.query`
                 insert into "scheduledCheckupStatuses" ("scheduledCheckupId", "dueAt", status)
                 values (${checkup.id}, ${checkup.nextRunDueAt}, ${res.status})
                 returning id

@@ -12,7 +12,7 @@ export async function index () {
 
     if (!checkupId) { throw new Error('Bad Request'); }
 
-    const { rows: checkIsOwnerRows } = await query`
+    const checkIsOwnerRows = await query`
         select * from "scheduledCheckups"
         where id=${checkupId} and "userId"=${req.userId}
     `;
@@ -39,9 +39,9 @@ export async function index () {
     `;
 
     const [
-        { rows: statuses },
-        { rows: [ { count } ]},
-        { rows: [ first, last ]},
+        statuses,
+        [ { count } ],
+        [ first, last ],
     ] = await Promise.all([
         getStatuses$,
         getTotalCount$,
