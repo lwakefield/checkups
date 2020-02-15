@@ -8,7 +8,7 @@ export async function seed(knex: Knex): Promise<any> {
             passwordHash: await bcrypt.hash('password123', 14)
         }).returning('*');
 
-    await knex('scheduledCheckups').insert([
+    await knex('checkups').insert([
         {
             userId,
             url: 'http://test-service/health?flakiness=0.99',

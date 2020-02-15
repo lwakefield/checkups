@@ -8,7 +8,7 @@ export async function index () {
     assertAuthenticated();
 
     const checkups = await query`
-        select * from "scheduledCheckups"
+        select * from "checkups"
         where "userId"=${req.userId}
         order by id desc
     `;
@@ -17,15 +17,15 @@ export async function index () {
         with "checkupsByAge" as (
             select
                 *,
-                rank() over (partition by "scheduledCheckupId" order by id desc)
-            from "scheduledCheckupStatuses"
+                rank() over (partition by "checkupId" order by id desc)
+            from "checkupStatuses"
             where
-                "scheduledCheckupId" = any(${checkups.map(v => v.id)})
+                "checkupId" = any(${checkups.map(v => v.id)})
         )
         select * from "checkupsByAge" where rank <= 5
     `;
 
-    const statusesGroupedByCheckup = groupBy(statuses, v => v.scheduledCheckupId);
+    const statusesGroupedByCheckup = groupBy(statuses, v => v.checkupId);
 
     for (const checkup of checkups) {
         Object.assign(checkup, { recentStatuses: statusesGroupedByCheckup[checkup.id] || [] });
@@ -47,7 +47,7 @@ export async function create () {
     const nextRunDueAt     = parseExpression(crontab).next().toISOString();
 
     const [ checkup ] = await query`
-        insert into "scheduledCheckups"(url, crontab, "nextRunDueAt", "userId")
+        insert into "checkups"(url, crontab, "nextRunDueAt", "userId")
         values (${url}, ${crontab}, ${nextRunDueAt}, ${req.userId})
         returning *
     `;
@@ -59,7 +59,7 @@ export async function show (id : string) {
     assertAuthenticated();
 
     const [ checkup ] = await query`
-        select * from "scheduledCheckups"
+        select * from "checkups"
         where id=${id}
     `;
 
@@ -67,8 +67,8 @@ export async function show (id : string) {
     if (checkup.userId !== req.userId) throw new Error('Unauthorized');
 
     const recentStatuses = await query`
-        select * from "scheduledCheckupStatuses"
-        where "scheduledCheckupId"=${id}
+        select * from "checkupStatuses"
+        where "checkupId"=${id}
         order by id desc
         limit 5
     `;

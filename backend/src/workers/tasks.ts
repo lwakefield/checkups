@@ -54,7 +54,7 @@ const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 
 async function maybeSendAlerts ({ scheduledCheckupStatusId }) {
     const [ latest, previous ] = await query`
-        select * from "scheduledCheckupStatuses"
+        select * from "checkupStatuses"
         where id <= ${scheduledCheckupStatusId}
         order by id desc
         limit 2
@@ -71,9 +71,9 @@ async function maybeSendAlerts ({ scheduledCheckupStatusId }) {
     }
 
     const [ checkup ] = await query`
-        select "scheduledCheckups".* from "scheduledCheckups", "scheduledCheckupStatuses"
-        where "scheduledCheckupStatuses"."scheduledCheckupId" = "scheduledCheckups".id
-            and "scheduledCheckupStatuses".id = ${scheduledCheckupStatusId}
+        select "checkups".* from "checkups", "checkupStatuses"
+        where "checkupStatuses"."checkupId" = "checkups".id
+            and "checkupStatuses".id = ${scheduledCheckupStatusId}
     `;
 
     const [ user ] = await query`

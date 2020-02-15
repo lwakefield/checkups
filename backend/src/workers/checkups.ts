@@ -15,7 +15,7 @@ async function main () {
             const trx = await transaction();
 
             const [ checkup ] = await trx.query`
-                select * from "scheduledCheckups"
+                select * from "checkups"
                 where "nextRunDueAt" <= now()
                 for update skip locked
                 limit 1
@@ -31,7 +31,7 @@ async function main () {
             const res = await fetch(checkup.url);
 
             const [ insertedStatus ] = await trx.query`
-                insert into "scheduledCheckupStatuses" ("scheduledCheckupId", "dueAt", status)
+                insert into "checkupStatuses" ("checkupId", "dueAt", status)
                 values (${checkup.id}, ${checkup.nextRunDueAt}, ${res.status})
                 returning id
             `;
@@ -45,7 +45,7 @@ async function main () {
 
             const nextRunDueAt = parseExpression(checkup.crontab).next().toISOString();
             await trx.query`
-                update "scheduledCheckups"
+                update "checkups"
                 set "nextRunDueAt" = ${nextRunDueAt}
                 where id = ${checkup.id}
             `;

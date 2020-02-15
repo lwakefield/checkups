@@ -14,14 +14,14 @@ export async function index () {
     if (!checkupId) { throw new Error('Bad Request'); }
 
     const checkIsOwnerRows = await query`
-        select * from "scheduledCheckups"
+        select * from "checkups"
         where id=${checkupId} and "userId"=${req.userId}
     `;
     if (checkIsOwnerRows.length === 0) throw new Error('Unauthorized');
 
     const baseQuery = query`
-        select * from "scheduledCheckupStatuses"
-        where "scheduledCheckupId"=${checkupId}
+        select * from "checkupStatuses"
+        where "checkupId"=${checkupId}
     `;
 
     const getStatuses$ = query`
