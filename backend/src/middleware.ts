@@ -2,10 +2,16 @@ import { randomBytes } from 'crypto';
 import { STATUS_CODES } from 'http';
 
 import { query } from './db';
+import { log } from './log';
 
 export async function before () {
     req.requestId = randomBytes(16).toString('hex');
-    console.log(`${new Date().toISOString()} ${req.requestId} -> ${req.method} ${req.url}`);
+    log({
+        message: "inbound request",
+        requestId: req.requestId,
+        method: req.method,
+        url: req.url,
+    });
 
     req.cookies = getCookies(req.headers['cookie'] ?? '');
 
@@ -38,7 +44,13 @@ function getCookies (cookieStr : string) {
 }
 
 export function after () {
-    console.log(`${new Date().toISOString()} ${req.requestId} <- ${req.method} ${req.url}`);
+    log({
+        message: "outbound response",
+        requestId: req.requestId,
+        method: req.method,
+        url: req.url,
+        status: res.status
+    });
  };
 
 const STATUS_TO_CODES = Object.entries(STATUS_CODES)
@@ -61,5 +73,12 @@ export function error (e) {
         res.send({ status: 500 });
     }
 
-    console.log(`${new Date().toISOString()} ${req.requestId} <- ${req.method} ${req.url}`);
+    log({
+        message: "outbound response",
+        error: e,
+        requestId: req.requestId,
+        method: req.method,
+        url: req.url,
+        status: res.status
+    });
 }

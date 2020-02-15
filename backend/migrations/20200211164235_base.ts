@@ -9,39 +9,39 @@ function addPrelude (table, knex) {
 export async function up(knex: Knex): Promise<any> {
     await knex.schema.createTable('users', (table) => {
         addPrelude(table, knex);
-        table.string('email').unique();
-        table.string('passwordHash');
+        table.string('email').unique().notNullable();
+        table.string('passwordHash').notNullable();
     });
 
     await knex.schema.createTable('sessions', (table) => {
         addPrelude(table, knex);
         table.integer('userId').references('users.id');
-        table.string('token');
-        table.dateTime('expiresAt');
+        table.string('token').notNullable();
+        table.dateTime('expiresAt').notNullable();
         table.boolean('valid').defaultTo(true);
     });
 
     await knex.schema.createTable('checkups', (table) => {
         addPrelude(table, knex);
         table.integer('userId').references('users.id');
-        table.string('url');
-        table.string('crontab');
-        table.dateTime('nextRunDueAt');
+        table.string('url').notNullable();
+        table.string('crontab').notNullable();
+        table.dateTime('nextRunDueAt').notNullable();
     });
 
     await knex.schema.createTable('tasks', (table) => {
         addPrelude(table, knex);
-        table.string('name');
-        table.json('payload');
-        table.string('status');
+        table.string('name').notNullable();
+        table.json('payload').notNullable();
+        table.string('status').notNullable();
     });
 
     await knex.schema.createTable('checkupStatuses', (table) => {
         addPrelude(table, knex);
         table.integer('checkupId').unsigned().references('checkups.id');
-        table.dateTime('dueAt');
-        table.dateTime('ranAt');
-        table.integer('status');
+        table.dateTime('dueAt').notNullable();
+        table.dateTime('ranAt').notNullable();
+        table.integer('status').notNullable();
     });
 }
 

@@ -2,6 +2,7 @@ import * as fetch from 'node-fetch';
 import { parseExpression } from 'cron-parser';
 
 import { init, transaction, } from '../db';
+import { log } from '../log';
 
 function sleep (ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -26,13 +27,13 @@ async function main () {
                 continue;
             };
 
-            console.log(`Handling ${JSON.stringify(checkup)}`);
+            log({ message: "running checkup", checkup });
 
             const res = await fetch(checkup.url);
 
             const [ insertedStatus ] = await trx.query`
-                insert into "checkupStatuses" ("checkupId", "dueAt", status)
-                values (${checkup.id}, ${checkup.nextRunDueAt}, ${res.status})
+                insert into "checkupStatuses" ("checkupId", "dueAt", "ranAt", status)
+                values (${checkup.id}, ${checkup.nextRunDueAt}, ${new Date().toISOString()}, ${res.status})
                 returning id
             `;
 
