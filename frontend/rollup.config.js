@@ -21,7 +21,7 @@ export default {
 			replace({
 				'process.browser': true,
 				'process.env.NODE_ENV': JSON.stringify(mode),
-				'process.env.API_URL': JSON.stringify("http://localhost:1111"),
+				'process.env.API_URL': JSON.stringify(process.env.FRONTEND_API_URL),
 			}),
 			svelte({
 				dev,
@@ -66,7 +66,7 @@ export default {
 			replace({
 				'process.browser': false,
 				'process.env.NODE_ENV': JSON.stringify(mode),
-				'process.env.API_URL': JSON.stringify("http://localhost:1111"),
+				'process.env.API_URL': JSON.stringify(process.env.BACKEND_API_URL),
 			}),
 			svelte({
 				generate: 'ssr',
@@ -92,7 +92,7 @@ export default {
 			replace({
 				'process.browser': true,
 				'process.env.NODE_ENV': JSON.stringify(mode),
-				'process.env.API_URL': JSON.stringify("http://localhost:1111"),
+				'process.env.API_URL': JSON.stringify(process.env.FRONTEND_API_URL),
 			}),
 			commonjs(),
 			!dev && terser()

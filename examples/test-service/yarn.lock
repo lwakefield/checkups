@@ -3,6 +3,6 @@
 
 
 "@persea/persea@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@persea/persea/-/persea-0.1.14.tgz#f4599f0d8a6a951457bb8c944850d468eb837a27"
-  integrity sha512-AgrSObKaESZhFsSw7vQndF7rMRG5/eLzR4MsOFIiwN3XZWCSN9VAc4kfDqFsnpZAyf30OqrxW4GBPkj2Gw3hAw==
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/@persea/persea/-/persea-0.1.16.tgz#b740d0adb28d9684e9f666210e1c40fef200180e"
+  integrity sha512-Sl6D+0Fikahrq1L/MYT3syq8DTy3MKhVQeKK7e1jGhqhZU41aYmdLN/URrrY/LHWTVvv4DT4GSkmIn/T7/u0zw==
