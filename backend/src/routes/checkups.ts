@@ -10,6 +10,7 @@ export async function index () {
     const checkups = await query`
         select * from "scheduledCheckups"
         where "userId"=${req.userId}
+        order by id desc
     `;
 
     const statuses = await query`

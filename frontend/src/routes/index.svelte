@@ -1,21 +1,4 @@
 <style>
-	h1, h2 {
-		margin: 0 auto;
-	}
-
-	h1 {
-		font-size: 2.8em;
-		text-transform: uppercase;
-		font-weight: 700;
-		margin: 0 0 0.5em 0;
-	}
-
-	@media (min-width: 480px) {
-		h1 {
-			font-size: 4em;
-		}
-	}
-
 	form {
 		display: flex;
 		flex-direction: column;
@@ -34,10 +17,15 @@
 	}
 
 	.ok {
-		color: green;
+		color: var(--green);
 	}
 	.notOk {
-		color: red;
+		color: var(--red);
+	}
+
+	.checkup {
+		border-bottom: 1px solid var(--gray);
+		padding: 1rem 0;
 	}
 </style>
 
@@ -78,9 +66,9 @@
 	<title>Checkups</title>
 </svelte:head>
 
-<form on:submit={handleCreateCheckup}>
-	<h2>New Checkup</h2>
+<h2>Outbound Checkups</h2>
 
+<form on:submit={handleCreateCheckup}>
 	<label>
 		URL: <input type="text" bind:value={newCheckup.url} >
 	</label>
@@ -98,20 +86,20 @@
 </form>
 
 <section>
-	<h2>Outbound Checkups</h2>
-
 	{#each checkups as checkup, i}
-		<div>
-			{checkup.url} - {checkup.crontab}
+		<div class="checkup">
+			<div>{checkup.url}</div>
 			<div>
+				<span>{checkup.crontab}</span>
+				-
 				{#each Array.from(checkup.recentStatuses).reverse() as status, i}
 					<span
 						class:ok="{status.status === 200}"
 						class:notOk="{status.status !== 200}"
-					>{status.status}&nbsp;</span>
-				{/each}
+					>{status.status}</span>
+				{/each}-
+				<a href="/checkups/{checkup.id}">View</a>
 			</div>
-			<a href="/checkups/{checkup.id}">View</a>
 		</div>
 	{/each}
 

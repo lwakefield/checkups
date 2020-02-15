@@ -24,7 +24,6 @@
 			statuses: await statuses.json(),
 			nextPage: statuses.headers.get('x-next-page'),
 			prevPage: statuses.headers.get('x-prev-page'),
-			lastStatusId: statuses.headers.get('x-last-id'),
 		};
 	}
 </script>
@@ -35,7 +34,6 @@
 	export let statuses;
 	export let nextPage;
 	export let prevPage;
-	export let lastStatusId;
 
 	$: sortedStatuses = statuses.sort((a, b) => b.dueAt - a.dueAt);
 	$: maxStatusTimestamp = new Date(sortedStatuses[0].dueAt).valueOf();
@@ -51,14 +49,14 @@
 
 <style>
 	.ok {
-		color: green;
+		color: var(--green);
 	}
 	.notOk {
-		color: red;
+		color: var(--red);
 	}
 	svg {
 		width: 100%;
-		height: 30px;
+		height: 20px;
 	}
 </style>
 
@@ -68,13 +66,15 @@
 
 <h2>{checkup.url}</h2>
 
+<br>
+
 <div bind:clientWidth={width}>
 	<svg>
 		{#each statuses as status, i}
 			<rect
 				width="3"
 				height="100%"
-				fill="{ status.status === 200 ? "#81a1c1" : "#b5616a" }"
+				fill={ status.status === 200 ? "var(--green)" : "var(--red)" }
 				x="{xScale(new Date(status.dueAt).valueOf())}"
 			/>
 		{/each}
