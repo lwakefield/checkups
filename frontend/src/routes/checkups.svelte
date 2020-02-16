@@ -1,21 +1,4 @@
 <style>
-	form {
-		display: flex;
-		flex-direction: column;
-		max-width: 500px;
-	}
-
-	label {
-		display: flex;
-		justify-content: space-between;
-		margin: 0.25rem 0;
-	}
-
-	input, select {
-		max-width: 300px;
-		width: 100%;
-	}
-
 	.ok {
 		color: var(--green);
 	}

@@ -1,34 +1,30 @@
 <style>
-	form {
-		display: flex;
-		flex-direction: column;
-		max-width: 500px;
-	}
-
-	label {
-		display: flex;
-		justify-content: space-between;
-		margin: 0.25rem;
-	}
-
-	input {
-		max-width: 300px;
-		width: 100%;
+	.error {
+		color: var(--red);
 	}
 </style>
 
 <script>
 	let email = '';
 	let password = '';
+	let error = null;
 
 	async function handleSignin (e) {
 		e.preventDefault();
 
-		await fetch(`${process.env.API_URL}/sessions`, {
+		const session = await fetch(`${process.env.API_URL}/sessions`, {
 			method: 'POST',
 			credentials: 'include',
 			body: JSON.stringify({ email, password }),
 		});
+
+		if (session.ok) {
+			error = null;
+			window.location = '/checkups';
+			return;
+		}
+
+		error = 'Oops - something doesn\'t look right. Can you try again?';
 	}
 </script>
 
@@ -45,6 +41,10 @@
 	<label>
 		Password: <input type="password" bind:value={password} >
 	</label>
+
+	{#if error != null}
+		<div class="error">{error}</div>
+	{/if}
 
 	<button>Signin</button>
 </form>

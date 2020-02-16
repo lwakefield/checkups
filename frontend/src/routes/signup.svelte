@@ -1,35 +1,30 @@
 <style>
-	form {
-		display: flex;
-		flex-direction: column;
-		max-width: 500px;
-	}
-
-	label {
-		display: flex;
-		justify-content: space-between;
-		margin: 0.25rem;
-	}
-
-	input {
-		max-width: 300px;
-		width: 100%;
+	.error {
+		color: var(--red);
 	}
 </style>
 
 <script>
 	let email = '';
 	let password = '';
-	let verifyPassword = '';
+	let error = null;
 
 	async function handleSignup (e) {
 		e.preventDefault();
 
-		await fetch(`${process.env.API_URL}/signup`, {
+		const signup = await fetch(`${process.env.API_URL}/signup`, {
 			method: 'POST',
 			credentials: 'include',
 			body: JSON.stringify({ email, password }),
 		});
+
+		if (signup.ok) {
+			error = null;
+			window.location = '/checkups';
+			return;
+		}
+
+		error = 'Oops - something doesn\'t look right. Can you try again?';
 	}
 </script>
 
@@ -44,12 +39,13 @@
 	</label>
 
 	<label>
-		Password: <input type="password" bind:value={password} >
+		Password:
+		<input type="password" bind:value={password} min=10 >
 	</label>
 
-	<label>
-		Verify Password: <input type="password" bind:value={verifyPassword} >
-	</label>
+	{#if error != null}
+		<div class="error">{error}</div>
+	{/if}
 
 	<button>Signup</button>
 </form>
