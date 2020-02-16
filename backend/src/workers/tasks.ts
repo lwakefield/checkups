@@ -1,12 +1,8 @@
-import { parseExpression } from 'cron-parser';
 import * as nodemailer from 'nodemailer';
 
 import { init, transaction, query } from '../db';
 import { log } from '../log';
-
-function sleep (ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { sleep } from '../util';
 
 const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 
@@ -26,6 +22,7 @@ const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 
             if (!task) {
                 trx.commit();
+                await sleep(1000);
                 continue;
             };
 

@@ -3,10 +3,7 @@ import { parseExpression } from 'cron-parser';
 
 import { init, transaction, } from '../db';
 import { log } from '../log';
-
-function sleep (ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { sleep } from '../util';
 
 async function main () {
     await init();
@@ -24,6 +21,7 @@ async function main () {
 
             if (!checkup) {
                 trx.commit();
+                await sleep(1000);
                 continue;
             };
 

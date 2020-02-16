@@ -43,7 +43,6 @@ services:
     command: node_modules/.bin/ts-node src/workers/checkups.ts
     environment:
       - DB_URI=postgres://postgres:password@db/postgres
-      - SMTP_URI=smtp://test:password@mailhog:1025/?pool=true
     depends_on:
       - db
     working_dir: /app
