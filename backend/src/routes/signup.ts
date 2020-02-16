@@ -6,9 +6,9 @@ import { transaction } from '../db';
 import { isEmail } from '../util';
 
 function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
-    if (!isEmail(req.json['email']))              throw new Error('Bad Request');
-    if (typeof req.json['password'] !== 'string') throw new Error('Bad Request');
-    if (req.json['password'].length < 10)         throw new Error('Bad Request');
+    if (!isEmail(payload['email']))              throw new Error('Bad Request');
+    if (typeof payload['password'] !== 'string') throw new Error('Bad Request');
+    if (payload['password'].length < 10)         throw new Error('Bad Request');
 }
 
 export async function create () {
