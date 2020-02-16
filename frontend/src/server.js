@@ -8,6 +8,7 @@ const { PORT, NODE_ENV } = process.env;
 const dev = NODE_ENV === 'development';
 
 async function authMiddleware (req, res, next) {
+	console.log(req.headers.cookie);
 	const auth = await fetch(
 		`${process.env.BACKEND_API_URL}/whoami`,
 		{

@@ -11,25 +11,33 @@ services:
       - db
       - compiler
     ports:
-      - 1111:80
+      - 80
     working_dir: /app
     volumes:
       - ./backend:/app
+    labels:
+      - "traefik.http.middlewares.strip-api.stripprefix.prefixes=/api"
+      - "traefik.http.routers.app.priority=200"
+      - "traefik.http.routers.app.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.app.middlewares=strip-api"
 
   frontend:
     image: node:12
     command: yarn dev
     environment:
-      - FRONTEND_API_URL=http://localhost:1111
+      - FRONTEND_API_URL=http://localhost:1111/api
       - BACKEND_API_URL=http://app:80
     depends_on:
       - db
     ports:
-      - 1112:3000
-      - 10000:10000
+      - 3000
+      - 10000
     working_dir: /app
     volumes:
       - ./frontend:/app
+    labels:
+      - "traefik.http.routers.frontend.priority=100"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
 
   compiler:
     image: node:12
@@ -78,3 +86,12 @@ services:
     image: postgres
     environment:
       - POSTGRES_PASSWORD=password
+
+  proxy:
+    image: traefik:v2.0
+    command: --api.insecure=true --providers.docker
+    ports:
+      - 1111:80
+      - 1112:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

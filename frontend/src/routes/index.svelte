@@ -5,10 +5,10 @@
 </script>
 
 <svelte:head>
-	<title>Checkups</title>
+	<title>Three Doctors</title>
 </svelte:head>
 
-<h1>Checkups</h1>
+<h1>Three Doctors</h1>
 
 <p>
 	Three Doctors is a simple service providing: scheduled health checkups,

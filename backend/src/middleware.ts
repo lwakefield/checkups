@@ -21,15 +21,12 @@ export async function before () {
             where
             token=${req.cookies.sessionToken}
             and now() < "expiresAt"
+            and valid = true
         `;
 
         req.userId          = user?.userId ?? null;
         req.isAuthenticated = Boolean(user?.userId);
     }
-
-    res.headers['Access-Control-Expose-Headers'] = 'x-total-count, x-next-page, x-prev-page';
-    res.headers['Access-Control-Allow-Credentials'] = 'true';
-    res.headers['Access-Control-Allow-Origin'] = req.headers['origin'] || '';
 };
 
 function getCookies (cookieStr : string) {
