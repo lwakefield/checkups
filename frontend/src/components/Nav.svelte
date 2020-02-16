@@ -58,6 +58,9 @@
 <nav>
 	<ul>
 		<li><a class:selected='{segment === undefined}' href='/'>home</a></li>
+		{#if user }
+			<li><a class:selected='{segment === "checkups"}' href='/checkups'>checkups</a></li>
+		{/if}
 	</ul>
 	<ul>
 		{#if user }
