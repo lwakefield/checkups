@@ -16,7 +16,7 @@ export async function up(knex: Knex): Promise<any> {
     await knex.schema.createTable('sessions', (table) => {
         addPrelude(table, knex);
         table.integer('userId').references('users.id');
-        table.string('token').notNullable();
+        table.string('token', 512).notNullable();
         table.dateTime('expiresAt').notNullable();
         table.boolean('valid').defaultTo(true);
     });

@@ -3,6 +3,7 @@ import { STATUS_CODES } from 'http';
 
 import { query } from './db';
 import { log } from './log';
+import { getVerifiedUserIdForSession } from './session';
 
 export async function before () {
     req.requestId = randomBytes(16).toString('hex');
@@ -16,16 +17,12 @@ export async function before () {
     req.cookies = getCookies(req.headers['cookie'] ?? '');
 
     if (req.cookies.sessionToken) {
-        const [ user ] = await query`
-            select * from sessions
-            where
-            token=${req.cookies.sessionToken}
-            and now() < "expiresAt"
-            and valid = true
-        `;
-
-        req.userId          = user?.userId ?? null;
-        req.isAuthenticated = Boolean(user?.userId);
+        try {
+            req.userId = await getVerifiedUserIdForSession(req.cookies.sessionToken);
+            req.isAuthenticated = Boolean(req.userId);
+        } catch(e)  {
+            //  TODO
+        }
     }
 };
 

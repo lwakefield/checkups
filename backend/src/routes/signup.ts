@@ -1,9 +1,8 @@
-import { randomBytes } from 'crypto';
-
 import * as bcrypt from 'bcrypt';
 
 import { transaction } from '../db';
 import { isEmail } from '../util';
+import { createSession } from '../session';
 
 function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
     if (!isEmail(payload['email']))              throw new Error('Bad Request');
@@ -23,16 +22,12 @@ export async function create () {
         returning *
     `;
 
-    const token = randomBytes(64).toString('hex');
-    const expiresAt = new Date(Date.now() + (1000 * 60 * 60 * 24 * 30)).toISOString();
-    await trx.query`
-        insert into sessions ("userId", "token", "expiresAt")
-        values (${user.id}, ${token}, ${expiresAt})
-    `;
+    const { token, expiresAt } = await createSession(user.id, trx.query);
+
     await trx.commit();
 
     res.send({
         status: 201,
-        headers: { 'Set-Cookie': `sessionToken=${token}; Expires=${expiresAt}` },
+        headers: { 'Set-Cookie': `sessionToken=${token}; Expires=${expiresAt}; Path=/` },
     });
 }

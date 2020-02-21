@@ -41,11 +41,17 @@
 	async function handleCreateCheckup (e) {
 		e.preventDefault();
 
-		await fetch(`${process.env.API_URL}/checkups`, {
+		const create = await fetch(`${process.env.API_URL}/checkups`, {
 			method: 'POST',
 			credentials: 'include',
 			body: JSON.stringify(newCheckup),
 		});
+
+		if (create.ok) {
+			window.location = window.location;
+		} else {
+			// TODO
+		}
 	}
 </script>
 
@@ -57,7 +63,7 @@
 
 <form on:submit={handleCreateCheckup}>
 	<label>
-		URL: <input type="text" bind:value={newCheckup.url} >
+		URL: <input type="url" bind:value={newCheckup.url} >
 	</label>
 
 	<label>Interval:

@@ -1,12 +1,12 @@
 version: "3.7"
-services:
 
 services:
-  app:
+  backend:
     image: node:12
     command: node_modules/.bin/persea --dir=dist --port=80 dev
     environment:
       - DB_URI=postgres://postgres:password@db/postgres
+      - SECRET=secretsecretsecret
     depends_on:
       - db
       - compiler
@@ -26,7 +26,7 @@ services:
     command: yarn dev
     environment:
       - FRONTEND_API_URL=http://localhost:1111/api
-      - BACKEND_API_URL=http://app:80
+      - BACKEND_API_URL=http://backend:80
     depends_on:
       - db
     ports:

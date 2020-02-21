@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 
 import { query } from '../db';
 import { isEmail } from '../util';
+import { createSession, invalidateSession } from '../session';
 
 function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
     if (!isEmail(req.json['email']))              throw new Error('Bad Request');
@@ -24,12 +25,7 @@ export async function create () {
 
     if (!match) throw new Error('Unauthorized');
 
-    const token = randomBytes(64).toString('hex');
-    const expiresAt = new Date(Date.now() + (1000 * 60 * 60 * 24 * 30)).toUTCString();
-    await query`
-        insert into sessions ("userId", "token", "expiresAt")
-        values (${user.id}, ${token}, ${expiresAt})
-    `;
+    const { token, expiresAt } = await createSession(user.id);
 
     res.send({
         status: 201,
@@ -38,11 +34,8 @@ export async function create () {
 }
 
 export async function destroy () {
-    await query`
-        update sessions
-        set valid=false
-        where token=${req.cookies.sessionToken}
-    `;
+    await invalidateSession(req.cookies.sessionToken);
+
     const expiredAt = new Date(Date.now() - 60 * 1000).toUTCString();
 
     res.send({
