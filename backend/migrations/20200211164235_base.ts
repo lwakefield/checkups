@@ -21,6 +21,14 @@ export async function up(knex: Knex): Promise<any> {
         table.boolean('valid').defaultTo(true);
     });
 
+    await knex.schema.createTable('resetPasswordTokens', (table) => {
+        addPrelude(table, knex);
+        table.integer('userId').references('users.id');
+        table.string('token', 512).notNullable();
+        table.dateTime('expiresAt').notNullable();
+        table.boolean('valid').defaultTo(true);
+    });
+
     await knex.schema.createTable('checkups', (table) => {
         addPrelude(table, knex);
         table.integer('userId').references('users.id');

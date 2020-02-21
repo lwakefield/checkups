@@ -29,11 +29,14 @@ async function main () {
 
             const res = await fetch(checkup.url);
 
+            const ranAt = new Date();
             const [ insertedStatus ] = await trx.query`
                 insert into "checkupStatuses" ("checkupId", "dueAt", "ranAt", status)
-                values (${checkup.id}, ${checkup.nextRunDueAt}, ${new Date().toISOString()}, ${res.status})
+                values (${checkup.id}, ${checkup.nextRunDueAt}, ${ranAt.toISOString()}, ${res.status})
                 returning id
             `;
+
+            log({ message: 'successfully ran checkup', checkupId: checkup.id, dueAt: checkup.dueAt, ranAt });
 
             await trx.query`
                 insert into tasks ("name", "payload", "status")
