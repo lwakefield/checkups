@@ -1,6 +1,7 @@
 import { randomBytes, createHmac } from 'crypto';
 
 import * as db from './db';
+import { sign, validateSignature } from './util';
 
 const TOKEN_SIZE = 128;
 
@@ -17,14 +18,7 @@ export async function createSession (userId : string, query = db.query) {
         values (${userId}, ${token.toString('hex')}, ${expiresAt})
     `;
 
-    const hmac = createHmac('sha256', process.env.SECRET);
-    hmac.update(token);
-    const signature = hmac.digest();
-
-    const signedToken = Buffer.concat([
-        token,
-        signature
-    ], token.length + signature.length);
+    const signedToken = sign(token);
 
     return {
         token: signedToken.toString('hex'),
@@ -33,7 +27,7 @@ export async function createSession (userId : string, query = db.query) {
 }
 
 export async function invalidateSession (signedToken : string) {
-    verifySignedToken(signedToken);
+    validateSignature(signedToken);
     const token = Buffer.from(signedToken, 'hex').slice(0, TOKEN_SIZE);
 
     await db.query`
@@ -44,7 +38,7 @@ export async function invalidateSession (signedToken : string) {
 }
 
 export async function getVerifiedUserIdForSession (signedToken : string) {
-    verifySignedToken(signedToken);
+    validateSignature(signedToken);
     const token = Buffer.from(signedToken, 'hex').slice(0, TOKEN_SIZE);
 
     const [ session ] = await db.query`
@@ -60,18 +54,4 @@ export async function getVerifiedUserIdForSession (signedToken : string) {
     }
 
     return session.userId;
-}
-
-export function verifySignedToken (signedToken : string) {
-    const buffer = Buffer.from(signedToken, 'hex');
-    const token = buffer.slice(0, TOKEN_SIZE);
-    const signature = buffer.slice(TOKEN_SIZE);
-
-    const hmac = createHmac('sha256', process.env.SECRET);
-    hmac.update(token);
-    const expectedSignature = hmac.digest();
-
-    if (false === expectedSignature.equals(signature)) {
-        throw new Error('Invalid Signature');
-    }
 }

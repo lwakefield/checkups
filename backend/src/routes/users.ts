@@ -1,10 +1,15 @@
 import * as bcrypt from 'bcrypt';
 
 import { query } from '../db';
-import { isEmail } from '../util';
+import { isEmail, validateSignature } from '../util';
 import { log } from '../log';
 
-function assertPayload (payload): asserts payload is { email?: string; newPassword?: string; password: string } {
+function assertPayload (payload): asserts payload is {
+    email?: string;
+    newPassword?: string;
+    password?: string;
+    token?: string;
+} {
 
     if (payload.email && typeof payload.password === 'string' && isEmail(payload.email)) return;
     if (payload.newPassword && typeof payload.password === 'string')                     return;
@@ -46,11 +51,32 @@ export async function update () {
         return res.send({ });
     }
 
-    if (payload.newPassword) {
+    if (payload.newPassword && payload.password) {
         log({
             message: "updating password",
             userId: user.id,
         });
+        const passwordHash = await bcrypt.hash(
+            payload.newPassword,
+            14
+        );
+        await query`
+            update users
+            set "passwordHash"=${passwordHash}
+            where id=${req.userId}
+        `;
+
+        return res.send({ });
+    }
+
+    if (payload.newPassword && payload.token) {
+        log({
+            message: "resetting password with token",
+            userId: user.id,
+        });
+
+        validateSignature(payload.token)
+
         const passwordHash = await bcrypt.hash(
             payload.newPassword,
             14

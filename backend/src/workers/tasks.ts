@@ -2,8 +2,8 @@ import * as nodemailer from 'nodemailer';
 
 import { init, transaction, query } from '../db';
 import { log } from '../log';
-import { sleep } from '../util';
-import {randomBytes, createHmac} from 'crypto';
+import { sleep, sign } from '../util';
+import {randomBytes, createHmac,} from 'crypto';
 
 const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 
@@ -123,18 +123,11 @@ async function sendResetPasswordEmail ({ userId }) {
 
     const trx = await transaction();
     await trx.query`
-        insert into "resetPasswordTokens" ("userId", "token", "expiresAt")
-        values (${user.id}, ${token.toString('hex')}, ${expiresAt})
+        insert into "resetPasswordTokens" ("userId", "token", "expiresAt", "valid")
+        values (${user.id}, ${token.toString('hex')}, ${expiresAt}, true)
     `;
 
-    const hmac = createHmac('sha256', process.env.SECRET);
-    hmac.update(token);
-    const signature = hmac.digest();
-
-    const signedToken = Buffer.concat([
-        token,
-        signature
-    ], token.length + signature.length);
+    const signedToken = sign(token);
 
     await transporter.sendMail({
         from: 'resetpassword@checkups.dev',

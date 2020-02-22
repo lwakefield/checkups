@@ -3,6 +3,7 @@ import * as knex from 'knex';
 export const db = knex({
     client: 'pg',
     connection: process.env.DB_URI,
+    asyncStackTraces: true,
     postProcessResponse: (result, context) => {
         const isRaw = result.command;
         if (isRaw) {

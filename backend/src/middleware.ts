@@ -21,7 +21,7 @@ export async function before () {
             req.userId = await getVerifiedUserIdForSession(req.cookies.sessionToken);
             req.isAuthenticated = Boolean(req.userId);
         } catch(e)  {
-            //  TODO
+            // TODO
         }
     }
 };

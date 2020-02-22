@@ -39,10 +39,10 @@
 	async function handleSetPassword (e) {
 		e.preventDefault();
 
-		const session = await fetch(`${process.env.API_URL}/users/me`, {
+		const session = await fetch(`${process.env.API_URL}/reset-password/me`, {
 			method: 'PATCH',
 			credentials: 'include',
-			body: JSON.stringify({ newPassword, token }),
+			body: JSON.stringify({ password, token }),
 		});
 
 		if (session.ok) {
@@ -60,7 +60,7 @@
 </svelte:head>
 
 {#if token }
-	<form on:submit={handleSubmit}>
+	<form on:submit={handleSetPassword}>
 		<h2>Set a new password</h2>
 		<label>
 			New Password: <input type="password" bind:value={password} >
