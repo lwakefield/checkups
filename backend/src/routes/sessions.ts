@@ -1,7 +1,5 @@
-import * as bcrypt from 'bcrypt';
-
 import { query } from '../db';
-import { isEmail } from '../util';
+import { isEmail, checkPassword } from '../util';
 import { createSession, invalidateSession } from '../session';
 
 function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
@@ -19,9 +17,7 @@ export async function create () {
 
     if (!user) throw new Error('Unauthorized');
 
-    const match = await bcrypt.compare(req.json.password, user.passwordHash);
-
-    if (!match) throw new Error('Unauthorized');
+    await checkPassword(req.json.password, user.passwordHash)
 
     const { token, expiresAt } = await createSession(user.id);
 

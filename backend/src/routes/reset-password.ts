@@ -1,6 +1,4 @@
-import * as bcrypt from 'bcrypt';
-
-import { isEmail, validateSignature, getPayloadFromSignedValue } from '../util';
+import { isEmail, checkSignature, getPayloadFromSignedValue, hashPassword } from '../util';
 import { query, transaction } from '../db';
 import { log } from '../log';
 import {createSession} from '../session';
@@ -39,8 +37,7 @@ function assertUpdatePayload (payload): asserts payload  is { token : string; pa
 
 export async function update () {
     assertUpdatePayload(req.json);
-
-    validateSignature(req.json.token)
+    checkSignature(req.json.token)
 
     const trx = await transaction();
 
@@ -63,10 +60,7 @@ export async function update () {
         userId: user.id,
     });
 
-    const passwordHash = await bcrypt.hash(
-      req.json.password,
-      14
-    );
+    const passwordHash = await hashPassword(req.json.password);
     await trx.query`
         update users
         set "passwordHash"=${passwordHash}

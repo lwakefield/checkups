@@ -1,19 +1,15 @@
-import * as bcrypt from 'bcrypt';
-
 import { query } from '../db';
-import { isEmail, validateSignature } from '../util';
+import { isEmail, checkSignature, hashPassword, checkPassword } from '../util';
 import { log } from '../log';
 
 function assertPayload (payload): asserts payload is {
     email?: string;
     newPassword?: string;
     password?: string;
-    token?: string;
 } {
 
     if (payload.email && typeof payload.password === 'string' && isEmail(payload.email)) return;
     if (payload.newPassword && typeof payload.password === 'string')                     return;
-    if (payload.newPassword && payload.token)                                            return;
 
     throw new Error('Bad Request');
 }
@@ -28,12 +24,7 @@ export async function update () {
         select * from users where id=${req.userId}
     `;
 
-    const match = await bcrypt.compare(
-        payload.password,
-        user.passwordHash
-    );
-
-    if (!match) throw new Error('Unauthorized');
+    await checkPassword(payload.password, user.passwordHash);
 
     if (payload.email) {
         log({
@@ -56,31 +47,7 @@ export async function update () {
             message: "updating password",
             userId: user.id,
         });
-        const passwordHash = await bcrypt.hash(
-            payload.newPassword,
-            14
-        );
-        await query`
-            update users
-            set "passwordHash"=${passwordHash}
-            where id=${req.userId}
-        `;
-
-        return res.send({ });
-    }
-
-    if (payload.newPassword && payload.token) {
-        log({
-            message: "resetting password with token",
-            userId: user.id,
-        });
-
-        validateSignature(payload.token)
-
-        const passwordHash = await bcrypt.hash(
-            payload.newPassword,
-            14
-        );
+        const passwordHash = await hashPassword(payload.newPassword);
         await query`
             update users
             set "passwordHash"=${passwordHash}

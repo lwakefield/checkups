@@ -1,7 +1,5 @@
-import * as bcrypt from 'bcrypt';
-
 import { transaction } from '../db';
-import { isEmail } from '../util';
+import { isEmail, hashPassword } from '../util';
 import { createSession } from '../session';
 
 function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
@@ -15,7 +13,7 @@ export async function create () {
 
     const trx = await transaction();
 
-    const passwordHash = await bcrypt.hash(req.json.password, 14);
+    const passwordHash = await hashPassword(req.json.password)
     const [ user ]  = await trx.query`
         insert into users (email, "passwordHash")
         values (${req.json.email}, ${passwordHash})

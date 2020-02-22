@@ -1,7 +1,7 @@
 import { randomBytes, createHmac } from 'crypto';
 
 import * as db from './db';
-import { sign, validateSignature } from './util';
+import { sign, checkSignature } from './util';
 
 const TOKEN_SIZE = 128;
 
@@ -27,7 +27,7 @@ export async function createSession (userId : string, query = db.query) {
 }
 
 export async function invalidateSession (signedToken : string) {
-    validateSignature(signedToken);
+    checkSignature(signedToken);
     const token = Buffer.from(signedToken, 'hex').slice(0, TOKEN_SIZE);
 
     await db.query`
@@ -38,7 +38,7 @@ export async function invalidateSession (signedToken : string) {
 }
 
 export async function getVerifiedUserIdForSession (signedToken : string) {
-    validateSignature(signedToken);
+    checkSignature(signedToken);
     const token = Buffer.from(signedToken, 'hex').slice(0, TOKEN_SIZE);
 
     const [ session ] = await db.query`
