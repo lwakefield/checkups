@@ -47,4 +47,6 @@
 	{/if}
 
 	<button>Signin</button>
+
+	<a href="/reset-password">Forgot your password?</a>
 </form>

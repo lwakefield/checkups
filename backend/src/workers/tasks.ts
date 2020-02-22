@@ -3,6 +3,7 @@ import * as nodemailer from 'nodemailer';
 import { init, transaction, query } from '../db';
 import { log } from '../log';
 import { sleep } from '../util';
+import {randomBytes, createHmac} from 'crypto';
 
 const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 
@@ -30,6 +31,8 @@ const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 
             if (task.name === 'maybeSendAlerts') {
                 await maybeSendAlerts(task.payload);
+            } else if (task.name === 'sendResetPasswordEmail') {
+                await sendResetPasswordEmail(task.payload);
             } else {
                 throw new Error(`No handler for ${task.name}`);
             }
@@ -41,6 +44,8 @@ const transporter = nodemailer.createTransport(process.env.SMTP_URI);
             `;
 
             await trx.commit();
+
+            log({ message: 'finished processing task', task });
 
             await sleep(1000);
         } catch (e) {
@@ -101,4 +106,49 @@ async function maybeSendAlerts ({ scheduledCheckupStatusId }) {
             } has resolved.`
         });
     }
+}
+
+async function sendResetPasswordEmail ({ userId }) {
+    const TOKEN_SIZE = 128;
+    const TTL = 1000 * 60 * 60;
+
+    const [ user ] = await query`
+        select id, email from users where id=${userId}
+    `;
+
+    if (!user) throw new Error('Could not find user');
+
+    const token = randomBytes(TOKEN_SIZE);
+    const expiresAt = new Date(Date.now() + TTL).toUTCString();
+
+    const trx = await transaction();
+    await trx.query`
+        insert into "resetPasswordTokens" ("userId", "token", "expiresAt")
+        values (${user.id}, ${token.toString('hex')}, ${expiresAt})
+    `;
+
+    const hmac = createHmac('sha256', process.env.SECRET);
+    hmac.update(token);
+    const signature = hmac.digest();
+
+    const signedToken = Buffer.concat([
+        token,
+        signature
+    ], token.length + signature.length);
+
+    await transporter.sendMail({
+        from: 'resetpassword@checkups.dev',
+        to: user.email,
+        subject: `Reset Password Request`,
+        text: `
+We have received a request to reset your password.
+
+If you did not make this request, please reach out to support@checkups.dev.
+
+If you did make this request, please follow this link to reset your
+password: ${process.env.SITE_URL}/reset-password?token=${signedToken.toString('hex')}
+        `.trim()
+    });
+
+    await trx.commit();
 }

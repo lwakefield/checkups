@@ -27,5 +27,9 @@ describe('user flows', () => {
 		cy.contains('button', 'Signout').click();
 
 		cy.url().should('match', /\/$/);
+
+		cy.contains('a', 'signin').click();
+		cy.url().should('include', '/signin');
+
 	});
 });

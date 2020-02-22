@@ -1,5 +1,3 @@
-import { randomBytes } from 'crypto';
-
 import * as bcrypt from 'bcrypt';
 
 import { query } from '../db';

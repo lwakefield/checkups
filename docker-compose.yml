@@ -4,9 +4,7 @@ services:
   backend:
     image: node:12
     command: node_modules/.bin/persea --dir=dist --port=80 dev
-    environment:
-      - DB_URI=postgres://postgres:password@db/postgres
-      - SECRET=secretsecretsecret
+    env_file: ./api.env
     depends_on:
       - db
       - compiler
@@ -49,8 +47,7 @@ services:
   checkups-worker:
     image: node:12
     command: node_modules/.bin/ts-node src/workers/checkups.ts
-    environment:
-      - DB_URI=postgres://postgres:password@db/postgres
+    env_file: ./api.env
     depends_on:
       - db
     working_dir: /app
@@ -60,9 +57,7 @@ services:
   tasks-worker:
     image: node:12
     command: node_modules/.bin/ts-node src/workers/tasks.ts
-    environment:
-      - DB_URI=postgres://postgres:password@db/postgres
-      - SMTP_URI=smtp://test:password@mailhog:1025/?pool=true
+    env_file: ./api.env
     depends_on:
       - db
       - mailhog

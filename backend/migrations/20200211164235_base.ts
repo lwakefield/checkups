@@ -41,7 +41,7 @@ export async function up(knex: Knex): Promise<any> {
         addPrelude(table, knex);
         table.string('name').notNullable();
         table.json('payload').notNullable();
-        table.string('status').notNullable();
+        table.string('status').defaultTo('queued').notNullable();
     });
 
     await knex.schema.createTable('checkupStatuses', (table) => {

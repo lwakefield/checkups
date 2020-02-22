@@ -1,8 +1,6 @@
 import { isEmail } from '../util';
-import { randomBytes, createHmac } from 'crypto';
-
-const TOKEN_SIZE = 128;
-const TTL = 1000 * 60 * 60;
+import { query } from '../db';
+import { log } from '../log';
 
 function assertPayload (payload): asserts payload is { email : string } {
     if (payload.email && !isEmail(payload.email)) throw new Error('Bad Request');
@@ -11,27 +9,24 @@ function assertPayload (payload): asserts payload is { email : string } {
 export async function create () {
     assertPayload(req.json);
 
-    const token = randomBytes(TOKEN_SIZE);
-    const expiresAt = new Date(Date.now() + TTL).toUTCString();
+    console.log(req.json.email);
 
-    const hmac = createHmac('sha256', process.env.SECRET);
-    hmac.update(token);
-    const signature = hmac.digest();
+    const [ user ] = await query`
+        select id from users
+        where email=${req.json.email}
+    `;
 
+    if (!user) {
+        log({ message: 'Requested reset password for non-existent user', payload: req.json });
+        // We return 200 to avoid leaking information about whether the account
+        // exists
+        return res.send({});
+    }
 
-    // await query`
-    //     insert into "resetPasswordToken" ("email", "token", "expiresAt")
-    //     values (${userId}, ${token.toString('hex')}, ${expiresAt})
-    // `;
+    await query`
+        insert into tasks (name, payload, status)
+        values ('sendResetPasswordEmail', ${JSON.stringify({ userId: user.id })}, 'queued')
+    `;
 
-
-    // const signedToken = Buffer.concat([
-    //     token,
-    //     signature
-    // ], token.length + signature.length);
-
-    // return {
-    //     token: signedToken.toString('hex'),
-    //     expiresAt
-    // };
+    res.send({});
 }

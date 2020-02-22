@@ -5,13 +5,12 @@ import { isEmail } from '../util';
 import { log } from '../log';
 
 function assertPayload (payload): asserts payload is { email?: string; newPassword?: string; password: string } {
-    if (typeof payload.password !== 'string')                   throw new Error('Bad Request');
 
-    if (payload.email && !isEmail(payload.email))               throw new Error('Bad Request');
-    if (payload.newPassword && payload.newPassword.length < 10) throw new Error('Bad Request');
+    if (payload.email && typeof payload.password === 'string' && isEmail(payload.email)) return;
+    if (payload.newPassword && typeof payload.password === 'string')                     return;
+    if (payload.newPassword && payload.token)                                            return;
 
-    if (payload.newPassword && payload.email)                   throw new Error('Bad Request');
-    if (!payload.newPassword && !payload.email)                 throw new Error('Bad Request');
+    throw new Error('Bad Request');
 }
 
 export async function update () {
