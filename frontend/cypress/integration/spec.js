@@ -10,24 +10,21 @@ describe('user flows', () => {
 		cy.visit('/signup');
 		cy.get('input[type="email"]').type(email);
 		cy.get('input[type="password"]').type('password123');
-		cy.get('button').contains('Signup').click();
+		cy.contains('button', 'Signup').click();
 		cy.url().should('include', '/checkups');
 
 		cy.get('input[type="url"]').type(testUrl);
 		cy.get('select').select('Every Minute');
 		cy.get('button').contains('Create').click();
 
-		cy.reload();
+		cy.contains('div', testUrl).should('be', 'visible');
 
-		cy.get('div').contains(testUrl).should('be', 'visible');
-
-		cy.get('a').contains('View').click();
+		cy.contains('a', 'View').click();
 		cy.url().should('match', /\/checkups\/\d+/);
 
 		cy.get('a').contains(email).click();
 		cy.url().should('include', '/me');
-		cy.get('h2').should('contain', 'Change Email');
-		cy.get('button').contains('Signout').click();
+		cy.contains('button', 'Signout').click();
 
 		cy.url().should('match', /\/$/);
 	});
