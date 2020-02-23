@@ -32,16 +32,12 @@ export async function up(knex: Knex): Promise<any> {
     await knex.schema.createTable('checkups', (table) => {
         addPrelude(table, knex);
         table.integer('userId').references('users.id');
-        table.string('url').notNullable();
+        table.enum('type', ['inbound', 'outbound']);
+        table.string('description');
+        table.string('url');
+        table.string('token');
         table.string('crontab').notNullable();
         table.dateTime('nextRunDueAt').notNullable();
-    });
-
-    await knex.schema.createTable('tasks', (table) => {
-        addPrelude(table, knex);
-        table.string('name').notNullable();
-        table.json('payload').notNullable();
-        table.string('status').defaultTo('queued').notNullable();
     });
 
     await knex.schema.createTable('checkupStatuses', (table) => {
@@ -50,6 +46,13 @@ export async function up(knex: Knex): Promise<any> {
         table.dateTime('dueAt').notNullable();
         table.dateTime('ranAt').notNullable();
         table.integer('status').notNullable();
+    });
+
+    await knex.schema.createTable('tasks', (table) => {
+        addPrelude(table, knex);
+        table.string('name').notNullable();
+        table.json('payload').notNullable();
+        table.string('status').defaultTo('queued').notNullable();
     });
 }
 

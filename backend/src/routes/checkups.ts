@@ -5,12 +5,23 @@ import { assertAuthenticated } from '../session';
 import { groupBy } from '../util';
 import { BadRequest, Unauthorized, NotFound } from '../errors';
 
+function assertIndexQuery (query): asserts query is {
+    type: 'inbound' | 'outbound';
+} {
+    const conditions = [
+        ['inbound', 'outbound'].includes(query['type'])
+    ];
+
+    if (false === conditions.every(Boolean)) throw new BadRequest();
+}
+
 export async function index () {
     assertAuthenticated();
+    assertIndexQuery(req.query);
 
     const checkups = await query`
         select * from "checkups"
-        where "userId"=${req.userId}
+        where "userId"=${req.userId} and type=${req.query.type}
         order by id desc
     `;
 
@@ -35,26 +46,41 @@ export async function index () {
     res.send({ json: checkups });
 }
 
-function assertCreatePayload (payload): asserts payload is { url: string; crontab: string } {
-    if (typeof payload['url'] !== 'string')     throw new BadRequest();
-    if (typeof payload['crontab'] !== 'string') throw new BadRequest();
+function assertCreatePayload (payload): asserts payload is {
+    url: string;
+    crontab: string;
+    type: 'inbound' | 'outbound';
+} {
+    const conditions = [
+        typeof payload['url'] === 'string',
+        typeof payload['crontab'] === 'string',
+        ['inbound', 'outbound'].includes(payload['type'])
+    ]
+
+    if (false === conditions.every(Boolean)) throw new BadRequest();
 }
 
 export async function create () {
     assertAuthenticated();
     assertCreatePayload(req.json);
 
-    const { url, crontab } = req.json;
+    const { type, url, crontab } = req.json;
     const nextRunDueAt     = parseExpression(crontab).next().toISOString();
 
-    const [ checkup ] = await query`
-        insert into "checkups"(url, crontab, "nextRunDueAt", "userId")
-        values (${url}, ${crontab}, ${nextRunDueAt}, ${req.userId})
-        returning *
-    `;
-
-    res.send({ status: 201, json: checkup });
+    if (type === 'outbound') {
+        const [ checkup ] = await query`
+            insert into "checkups"(type, url, crontab, "nextRunDueAt", "userId")
+            values (${type}, ${url}, ${crontab}, ${nextRunDueAt}, ${req.userId})
+            returning *
+        `;
+        res.send({ status: 201, json: checkup });
+    } else if (type === 'inbound') {
+        throw new Error('Not Implmented');
+    } else {
+        throw new Error('Not Implmented');
+    }
 };
+
 
 export async function show (id : string) {
     assertAuthenticated();

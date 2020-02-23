@@ -18,11 +18,16 @@
 			return this.redirect(302, '/signin')
 		}
 
-		const res = await this.fetch(`${process.env.API_URL}/checkups`, {
+		const outbound = await this.fetch(`${process.env.API_URL}/checkups?type=outbound`, {
 			credentials: 'include',
 		});
-		const checkups = res.ok ? await res.json() : [];
-		return { checkups };
+		const inbound = await this.fetch(`${process.env.API_URL}/checkups?type=inbound`, {
+			credentials: 'include',
+		});
+		return {
+			outboundCheckups: outbound.ok ? await outbound.json() : [],
+			inboundCheckups:  inbound.ok  ? await inbound.json()  : [],
+		};
 	}
 </script>
 
@@ -33,10 +38,12 @@
 
 	const newCheckup = {
 		url: '',
-		crontab: '0 * * * *'
+		crontab: '0 * * * *',
+		type: 'outbound',
 	};
 
-	export let checkups;
+	export let outboundCheckups;
+	export let inboundCheckups;
 
 	async function handleCreateCheckup (e) {
 		e.preventDefault();
@@ -79,7 +86,7 @@
 </form>
 
 <section>
-	{#each checkups as checkup, i}
+	{#each outboundCheckups as checkup, i}
 		<div class="checkup">
 			<div>{checkup.url}</div>
 			<div>
