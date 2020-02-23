@@ -29,7 +29,7 @@ export async function up(knex: Knex): Promise<any> {
         table.boolean('valid').defaultTo(true);
     });
 
-    await knex.schema.createTable('outboundCheckups', (table) => {
+    await knex.schema.createTable('checkups', (table) => {
         addPrelude(table, knex);
         table.integer('userId').references('users.id');
         table.string('url').notNullable();
@@ -44,9 +44,9 @@ export async function up(knex: Knex): Promise<any> {
         table.string('status').defaultTo('queued').notNullable();
     });
 
-    await knex.schema.createTable('outboundCheckupStatuses', (table) => {
+    await knex.schema.createTable('checkupStatuses', (table) => {
         addPrelude(table, knex);
-        table.integer('outboundCheckupId').unsigned().references('outboundCheckups.id');
+        table.integer('checkupId').unsigned().references('checkups.id');
         table.dateTime('dueAt').notNullable();
         table.dateTime('ranAt').notNullable();
         table.integer('status').notNullable();
@@ -55,10 +55,9 @@ export async function up(knex: Knex): Promise<any> {
 
 
 export async function down(knex: Knex): Promise<any> {
-    await knex.schema.dropTable('outboundCheckupStatuses');
-    await knex.schema.dropTable('outboundCheckups');
+    await knex.schema.dropTable('checkupStatuses');
+    await knex.schema.dropTable('checkups');
     await knex.schema.dropTable('sessions');
     await knex.schema.dropTable('users');
     await knex.schema.dropTable('tasks');
-    await knex.schema.dropTable('resetPasswordToken');
 }

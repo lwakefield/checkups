@@ -56,7 +56,7 @@ const transporter = nodemailer.createTransport(process.env.SMTP_URI);
 
 async function maybeSendAlerts ({ scheduledCheckupStatusId }) {
     const [ latest, previous ] = await query`
-        select * from "outboundCheckupStatuses"
+        select * from "checkupStatuses"
         where id <= ${scheduledCheckupStatusId}
         order by id desc
         limit 2
@@ -72,37 +72,37 @@ async function maybeSendAlerts ({ scheduledCheckupStatusId }) {
         return;
     }
 
-    const [ outboundCheckup ] = await query`
-        select "outboundCheckups".* from "outboundCheckups", "outboundCheckupStatuses"
-        where "outboundCheckupStatuses"."outboundCheckupId" = "outboundCheckups".id
-            and "outboundCheckupStatuses".id = ${scheduledCheckupStatusId}
+    const [ checkup ] = await query`
+        select "checkups".* from "checkups", "checkupStatuses"
+        where "checkupStatuses"."checkupId" = "checkups".id
+            and "checkupStatuses".id = ${scheduledCheckupStatusId}
     `;
 
     const [ user ] = await query`
         select * from users
-        where id=${outboundCheckup.userId}
+        where id=${checkup.userId}
     `;
 
     if (latest.status !== 200) {
         await transporter.sendMail({
             from: 'alerts@checkups.dev',
             to: user.email,
-            subject: `[FAILURE] ${outboundCheckup.url} failed it's outboundCheckup`,
+            subject: `[FAILURE] ${checkup.url} failed it's checkup`,
             text: `Just letting you know that ${
-                outboundCheckup.url
-            } failed it's outbound checkup scheduled for ${
-                outboundCheckup.nextRunDueAt.toISOString()
+                checkup.url
+            } failed it's checkup scheduled for ${
+                checkup.nextRunDueAt.toISOString()
             }.`
         });
     } else if (latest.status === 200 && previous) {
         await transporter.sendMail({
             from: 'alerts@checkups.dev',
             to: user.email,
-            subject: `[RESOLVED] ${outboundCheckup.url} has resolved`,
-            text: `Just letting you know that the outbound checkup scheduled at ${
-                outboundCheckup.nextRunDueAt.toISOString()
+            subject: `[RESOLVED] ${checkup.url} has resolved`,
+            text: `Just letting you know that the checkup scheduled at ${
+                checkup.nextRunDueAt.toISOString()
             } for ${
-                outboundCheckup.url
+                checkup.url
             } has resolved.`
         });
     }

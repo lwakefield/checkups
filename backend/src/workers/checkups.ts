@@ -12,31 +12,31 @@ async function main () {
         try {
             const trx = await transaction();
 
-            const [ outboundCheckup ] = await trx.query`
-                select * from "outboundCheckups"
+            const [ checkup ] = await trx.query`
+                select * from "checkups"
                 where "nextRunDueAt" <= now()
                 for update skip locked
                 limit 1
             `;
 
-            if (!outboundCheckup) {
+            if (!checkup) {
                 trx.commit();
                 await sleep(1000);
                 continue;
             };
 
-            log({ message: "running outbound checkup", outboundCheckup });
+            log({ message: "running checkup", checkup });
 
-            const res = await fetch(outboundCheckup.url);
+            const res = await fetch(checkup.url);
 
             const ranAt = new Date();
             const [ insertedStatus ] = await trx.query`
-                insert into "outboundCheckupStatuses" ("outboundCheckupId", "dueAt", "ranAt", status)
-                values (${outboundCheckup.id}, ${outboundCheckup.nextRunDueAt}, ${ranAt.toISOString()}, ${res.status})
+                insert into "checkupStatuses" ("checkupId", "dueAt", "ranAt", status)
+                values (${checkup.id}, ${checkup.nextRunDueAt}, ${ranAt.toISOString()}, ${res.status})
                 returning id
             `;
 
-            log({ message: 'successfully ran outbound  checkup', outboundCheckupId: outboundCheckup.id, dueAt: outboundCheckup.dueAt, ranAt });
+            log({ message: 'successfully ran checkup', checkupId: checkup.id, dueAt: checkup.dueAt, ranAt });
 
             await trx.query`
                 insert into tasks ("name", "payload", "status")
@@ -45,11 +45,11 @@ async function main () {
                 }, 'queued')
             `;
 
-            const nextRunDueAt = parseExpression(outboundCheckup.crontab).next().toISOString();
+            const nextRunDueAt = parseExpression(checkup.crontab).next().toISOString();
             await trx.query`
-                update "outboundCheckups"
+                update "checkups"
                 set "nextRunDueAt" = ${nextRunDueAt}
-                where id = ${outboundCheckup.id}
+                where id = ${checkup.id}
             `;
 
             await trx.commit();

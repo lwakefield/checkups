@@ -8,24 +8,24 @@ export async function index () {
     assertAuthenticated();
 
     const {
-        outboundCheckupId,
+        checkupId,
         beforeId = MAX_INT_64,
         afterId = 0,
         offset = 0,
         limit = 20,
     } = req.query as any;
 
-    if (!outboundCheckupId) throw new BadRequest();
+    if (!checkupId) throw new BadRequest();
 
     const checkIsOwnerRows = await query`
-        select * from "outboundCheckups"
-        where id=${outboundCheckupId} and "userId"=${req.userId}
+        select * from "checkups"
+        where id=${checkupId} and "userId"=${req.userId}
     `;
     if (checkIsOwnerRows.length === 0) throw new Unauthorized();
 
     const baseQuery = query`
-        select * from "outboundCheckupStatuses"
-        where "outboundCheckupId"=${outboundCheckupId}
+        select * from "checkupStatuses"
+        where "checkupId"=${checkupId}
     `;
 
     const getStatuses$ = query`
