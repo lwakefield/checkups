@@ -32,10 +32,10 @@ export async function up(knex: Knex): Promise<any> {
     await knex.schema.createTable('checkups', (table) => {
         addPrelude(table, knex);
         table.integer('userId').references('users.id');
-        table.enum('type', ['inbound', 'outbound']);
+        table.enum('type', ['inbound', 'outbound']).notNullable();
         table.string('description');
         table.string('url');
-        table.string('token');
+        table.string('token', 512);
         table.string('crontab').notNullable();
         table.dateTime('nextRunDueAt').notNullable();
     });
@@ -61,6 +61,7 @@ export async function down(knex: Knex): Promise<any> {
     await knex.schema.dropTable('checkupStatuses');
     await knex.schema.dropTable('checkups');
     await knex.schema.dropTable('sessions');
+    await knex.schema.dropTable('resetPasswordTokens');
     await knex.schema.dropTable('users');
     await knex.schema.dropTable('tasks');
 }

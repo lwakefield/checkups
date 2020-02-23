@@ -5,6 +5,7 @@ describe('user flows', () => {
 		crypto.randomBytes(8).toString('hex')
 	}@example.com`;
 	const testUrl = 'http://test-service/health?flakiness=0.90';
+	const testDescription = 'lorem ipsum';
 
 	it('signup -> add checkup -> view checkup -> signout', () => {
 		cy.visit('/signup');
@@ -13,11 +14,19 @@ describe('user flows', () => {
 		cy.contains('button', 'Signup').click();
 		cy.url().should('include', '/checkups');
 
-		cy.get('input[type="url"]').type(testUrl);
-		cy.get('select').select('Every Minute');
-		cy.get('button').contains('Create').click();
-
+		cy.get('form:first').within(() => {
+			cy.get('input[type="url"]').type(testUrl);
+			cy.get('select').select('Every Minute');
+			cy.get('button').contains('Create').click();
+		});
 		cy.contains('div', testUrl).should('be', 'visible');
+
+		cy.get('form:last').within(() => {
+			cy.get('input[type="text"]').type(testDescription);
+			cy.get('select').select('Every Minute');
+			cy.get('button').contains('Create').click();
+		});
+		cy.contains('div', testDescription).should('be', 'visible');
 
 		cy.contains('a', 'View').click();
 		cy.url().should('match', /\/checkups\/\d+/);

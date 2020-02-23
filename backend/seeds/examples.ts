@@ -11,24 +11,28 @@ export async function seed(knex: Knex): Promise<any> {
     await knex('checkups').insert([
         {
             userId,
+            type: 'outbound',
             url: 'http://test-service/health?flakiness=0.99',
             crontab: '* * * * *',
             nextRunDueAt: (new Date()).toISOString(),
         },
         {
             userId,
+            type: 'outbound',
             url: 'http://test-service/health?flakiness=0.8',
             crontab: '* * * * *',
             nextRunDueAt: (new Date()).toISOString(),
         },
         {
             userId,
+            type: 'outbound',
             url: 'http://test-service/health?flakiness=0.2',
             crontab: '* * * * *',
             nextRunDueAt: (new Date()).toISOString(),
         },
         {
             userId,
+            type: 'outbound',
             url: 'http://test-service/health?flakiness=0.01',
             crontab: '* * * * *',
             nextRunDueAt: (new Date()).toISOString(),
