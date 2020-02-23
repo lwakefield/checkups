@@ -1,8 +1,12 @@
 import { db, query } from '../db';
+import { BadRequest, Unauthorized } from '../errors';
+import { assertAuthenticated } from '../session';
 
 const MAX_INT_64 = 2147483647
 
 export async function index () {
+    assertAuthenticated();
+
     const {
         checkupId,
         beforeId = MAX_INT_64,
@@ -11,13 +15,13 @@ export async function index () {
         limit = 20,
     } = req.query as any;
 
-    if (!checkupId) { throw new Error('Bad Request'); }
+    if (!checkupId) throw new BadRequest();
 
     const checkIsOwnerRows = await query`
         select * from "checkups"
         where id=${checkupId} and "userId"=${req.userId}
     `;
-    if (checkIsOwnerRows.length === 0) throw new Error('Unauthorized');
+    if (checkIsOwnerRows.length === 0) throw new Unauthorized();
 
     const baseQuery = query`
         select * from "checkupStatuses"

@@ -1,10 +1,11 @@
 import { isEmail, checkSignature, getPayloadFromSignedValue, hashPassword } from '../util';
 import { query, transaction } from '../db';
 import { log } from '../log';
-import {createSession} from '../session';
+import { createSession } from '../session';
+import { BadRequest } from '../errors';
 
 function assertCreatePayload (payload): asserts payload is { email : string } {
-    if (payload.email && !isEmail(payload.email)) throw new Error('Bad Request');
+    if (payload.email && !isEmail(payload.email)) throw new BadRequest();
 }
 
 export async function create () {
@@ -31,8 +32,8 @@ export async function create () {
 }
 
 function assertUpdatePayload (payload): asserts payload  is { token : string; password: string; } {
-    if (typeof payload.token !== 'string')    throw new Error('Bad Request');
-    if (typeof payload.password !== 'string') throw new Error('Bad Request');
+    if (typeof payload.token !== 'string')    throw new BadRequest();
+    if (typeof payload.password !== 'string') throw new BadRequest();
 }
 
 export async function update () {
@@ -53,7 +54,7 @@ export async function update () {
             and "resetPasswordTokens".valid = true
     `;
 
-    if (!user) throw new Error('Bad Request');
+    if (!user) throw new BadRequest();
 
     log({
         message: "resetting password with token",
@@ -72,9 +73,9 @@ export async function update () {
         where token=${token}
     `;
 
-    await trx.commit();
+    const session = await createSession(user.id, trx.query);
 
-    const session = await createSession(user.id);
+    await trx.commit();
 
     res.send({
         status: 200,

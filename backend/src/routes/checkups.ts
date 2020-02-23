@@ -3,6 +3,7 @@ import { parseExpression } from 'cron-parser';
 import { query } from '../db';
 import { assertAuthenticated } from '../session';
 import { groupBy } from '../util';
+import { BadRequest, Unauthorized, NotFound } from '../errors';
 
 export async function index () {
     assertAuthenticated();
@@ -35,8 +36,8 @@ export async function index () {
 }
 
 function assertCreatePayload (payload): asserts payload is { url: string; crontab: string } {
-    if (typeof payload['url'] !== 'string')     throw new Error('Bad Request');
-    if (typeof payload['crontab'] !== 'string') throw new Error('Bad Request');
+    if (typeof payload['url'] !== 'string')     throw new BadRequest();
+    if (typeof payload['crontab'] !== 'string') throw new BadRequest();
 }
 
 export async function create () {
@@ -63,8 +64,8 @@ export async function show (id : string) {
         where id=${id}
     `;
 
-    if (!checkup)                      throw new Error('Not Found');
-    if (checkup.userId !== req.userId) throw new Error('Unauthorized');
+    if (!checkup)                      throw new NotFound();
+    if (checkup.userId !== req.userId) throw new Unauthorized();
 
     const recentStatuses = await query`
         select * from "checkupStatuses"

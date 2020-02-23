@@ -1,7 +1,8 @@
 import { query } from '../db';
+import { assertAuthenticated } from '../session';
 
 export async function index () {
-    if (!req.isAuthenticated) throw new Error('Unauthorized'); 
+    assertAuthenticated();
 
     const [ user ] = await query`
         select id, email from users

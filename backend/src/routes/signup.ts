@@ -1,11 +1,12 @@
 import { transaction } from '../db';
 import { isEmail, hashPassword } from '../util';
 import { createSession } from '../session';
+import { BadRequest } from '../errors';
 
 function assertCreatePayload (payload): asserts payload is { email: string; password: string } {
-    if (!isEmail(payload['email']))              throw new Error('Bad Request');
-    if (typeof payload['password'] !== 'string') throw new Error('Bad Request');
-    if (payload['password'].length < 10)         throw new Error('Bad Request');
+    if (!isEmail(payload['email']))              throw new BadRequest();
+    if (typeof payload['password'] !== 'string') throw new BadRequest();
+    if (payload['password'].length < 10)         throw new BadRequest();
 }
 
 export async function create () {
