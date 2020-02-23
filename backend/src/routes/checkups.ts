@@ -8,31 +8,31 @@ import { BadRequest, Unauthorized, NotFound } from '../errors';
 export async function index () {
     assertAuthenticated();
 
-    const checkups = await query`
-        select * from "checkups"
+    const outboundCheckups = await query`
+        select * from "outboundCheckups"
         where "userId"=${req.userId}
         order by id desc
     `;
 
     const statuses = await query`
-        with "checkupsByAge" as (
+        with "outboundCheckupsByAge" as (
             select
                 *,
-                rank() over (partition by "checkupId" order by id desc)
-            from "checkupStatuses"
+                rank() over (partition by "outboundCheckupId" order by id desc)
+            from "outboundCheckupStatuses"
             where
-                "checkupId" = any(${checkups.map(v => v.id)})
+                "outboundCheckupId" = any(${outboundCheckups.map(v => v.id)})
         )
-        select * from "checkupsByAge" where rank <= 5
+        select * from "outboundCheckupsByAge" where rank <= 5
     `;
 
-    const statusesGroupedByCheckup = groupBy(statuses, v => v.checkupId);
+    const statusesGroupedByCheckup = groupBy(statuses, v => v.outboundCheckupId);
 
-    for (const checkup of checkups) {
-        Object.assign(checkup, { recentStatuses: statusesGroupedByCheckup[checkup.id] || [] });
+    for (const outboundCheckup of outboundCheckups) {
+        Object.assign(outboundCheckup, { recentStatuses: statusesGroupedByCheckup[outboundCheckup.id] || [] });
     }
 
-    res.send({ json: checkups });
+    res.send({ json: outboundCheckups });
 }
 
 function assertCreatePayload (payload): asserts payload is { url: string; crontab: string } {
@@ -47,34 +47,34 @@ export async function create () {
     const { url, crontab } = req.json;
     const nextRunDueAt     = parseExpression(crontab).next().toISOString();
 
-    const [ checkup ] = await query`
-        insert into "checkups"(url, crontab, "nextRunDueAt", "userId")
+    const [ outboundCheckup ] = await query`
+        insert into "outboundCheckups"(url, crontab, "nextRunDueAt", "userId")
         values (${url}, ${crontab}, ${nextRunDueAt}, ${req.userId})
         returning *
     `;
 
-    res.send({ status: 201, json: checkup });
+    res.send({ status: 201, json: outboundCheckup });
 };
 
 export async function show (id : string) {
     assertAuthenticated();
 
-    const [ checkup ] = await query`
-        select * from "checkups"
+    const [ outboundCheckup ] = await query`
+        select * from "outboundCheckups"
         where id=${id}
     `;
 
-    if (!checkup)                      throw new NotFound();
-    if (checkup.userId !== req.userId) throw new Unauthorized();
+    if (!outboundCheckup)                      throw new NotFound();
+    if (outboundCheckup.userId !== req.userId) throw new Unauthorized();
 
     const recentStatuses = await query`
-        select * from "checkupStatuses"
-        where "checkupId"=${id}
+        select * from "outboundCheckupStatuses"
+        where "outboundCheckupId"=${id}
         order by id desc
         limit 5
     `;
 
-    Object.assign(checkup, { recentStatuses });
+    Object.assign(outboundCheckup, { recentStatuses });
 
-    res.send({ json: checkup });
+    res.send({ json: outboundCheckup });
 };
