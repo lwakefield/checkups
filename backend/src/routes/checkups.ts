@@ -27,15 +27,8 @@ export async function index () {
     `;
 
     const statuses = await query`
-        with "checkupsByAge" as (
-            select
-                *,
-                rank() over (partition by "checkupId" order by id desc)
-            from "checkupStatuses"
-            where
-                "checkupId" = any(${checkups.map(v => v.id)})
-        )
-        select * from "checkupsByAge" where rank <= 5
+        select * from "checkupStatusesByAge"
+        where age <= 5 and "checkupId"=any(${checkups.map(v => v.id)})
     `;
 
     const statusesGroupedByCheckup = groupBy(statuses, v => v.checkupId);
@@ -111,10 +104,8 @@ export async function show (id : string) {
     if (checkup.userId !== req.userId) throw new Unauthorized();
 
     const recentStatuses = await query`
-        select * from "checkupStatuses"
-        where "checkupId"=${id}
-        order by id desc
-        limit 5
+        select * from "checkupStatusesByAge"
+        where age <= 5 and "checkupId"=${id}
     `;
 
     Object.assign(checkup, { recentStatuses });
