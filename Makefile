@@ -1,3 +1,7 @@
+install:
+	docker-compose run --no-deps backend yarn install
+	docker-compose run --no-deps frontend yarn install
+
 migrate:
 	docker-compose run backend node_modules/.bin/ts-node node_modules/.bin/knex migrate:latest
 
