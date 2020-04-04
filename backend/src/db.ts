@@ -18,8 +18,8 @@ export async function init () {
     await db.migrate.latest();
 }
 
-export function query (parts : TemplateStringsArray, ...bindings : Array<knex.RawBinding>) {
-    return db.raw(parts.join('?'), bindings);
+export function query<T> (parts : TemplateStringsArray, ...bindings : Array<knex.RawBinding>) {
+    return db.raw<T>(parts.join('?'), bindings);
 }
 
 export async function transaction () {

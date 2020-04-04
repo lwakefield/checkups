@@ -1,10 +1,11 @@
+import { randomBytes } from 'crypto';
+
 import { parseExpression } from 'cron-parser';
 
 import { query } from '../db';
 import { assertAuthenticated } from '../session';
-import { groupBy } from '../util';
 import { BadRequest, Unauthorized, NotFound } from '../errors';
-import {randomBytes} from 'crypto';
+import { getAllCheckupsForUser, getCheckupById } from '../repos/checkups';
 
 function assertIndexQuery (query): asserts query is {
     type: 'inbound' | 'outbound';
@@ -20,22 +21,7 @@ export async function index () {
     assertAuthenticated();
     assertIndexQuery(req.query);
 
-    const checkups = await query`
-        select * from "checkups"
-        where "userId"=${req.userId} and type=${req.query.type}
-        order by id desc
-    `;
-
-    const statuses = await query`
-        select * from "checkupStatusesByAge"
-        where age <= 5 and "checkupId"=any(${checkups.map(v => v.id)})
-    `;
-
-    const statusesGroupedByCheckup = groupBy(statuses, v => v.checkupId);
-
-    for (const checkup of checkups) {
-        Object.assign(checkup, { recentStatuses: statusesGroupedByCheckup[checkup.id] || [] });
-    }
+    const checkups = await getAllCheckupsForUser(req.userId);
 
     res.send({ json: checkups });
 }
@@ -95,20 +81,9 @@ export async function create () {
 export async function show (id : string) {
     assertAuthenticated();
 
-    const [ checkup ] = await query`
-        select * from "checkups"
-        where id=${id}
-    `;
+    const checkup = await getCheckupById(Number(id));
 
-    if (!checkup)                      throw new NotFound();
     if (checkup.userId !== req.userId) throw new Unauthorized();
-
-    const recentStatuses = await query`
-        select * from "checkupStatusesByAge"
-        where age <= 5 and "checkupId"=${id}
-    `;
-
-    Object.assign(checkup, { recentStatuses });
 
     res.send({ json: checkup });
 };
