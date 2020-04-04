@@ -14,3 +14,6 @@ seed:
 
 start:
 	docker-compose up
+
+setup: install migrate seed
+
