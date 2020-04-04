@@ -1,11 +1,6 @@
-import { randomBytes } from 'crypto';
-
-import { parseExpression } from 'cron-parser';
-
-import { query } from '../db';
 import { assertAuthenticated } from '../session';
-import { BadRequest, Unauthorized, NotFound } from '../errors';
-import { getAllCheckupsForUser, getCheckupById } from '../repos/checkups';
+import { BadRequest, Unauthorized, } from '../errors';
+import { getAllCheckupsForUser, getCheckupById, createCheckup } from '../repos/checkups';
 
 function assertIndexQuery (query): asserts query is {
     type: 'inbound' | 'outbound';
@@ -54,23 +49,8 @@ export async function create () {
     assertAuthenticated();
     assertCreatePayload(req.json);
 
-    const { type, url, description, crontab } = req.json;
-    const nextRunDueAt     = parseExpression(crontab).next().toISOString();
-
-    if (type === 'outbound') {
-        const [ checkup ] = await query`
-            insert into "checkups"(type, url, crontab, "nextRunDueAt", "userId")
-            values (${type}, ${url}, ${crontab}, ${nextRunDueAt}, ${req.userId})
-            returning *
-        `;
-        res.send({ status: 201, json: checkup });
-    } else if (type === 'inbound') {
-        const token = randomBytes(128).toString('hex');
-        const [ checkup ] = await query`
-            insert into "checkups"(type, token, description, crontab, "nextRunDueAt", "userId")
-            values (${type}, ${token}, ${description}, ${crontab}, ${nextRunDueAt}, ${req.userId})
-            returning *
-        `;
+    if (req.json.type === 'outbound') {
+        const checkup = await createCheckup({ ...req.json, userId: req.userId })
         res.send({ status: 201, json: checkup });
     } else {
         throw new Error('Not Implemented');
